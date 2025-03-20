@@ -20,7 +20,7 @@ st.markdown("Generate comprehensive, customized notes on any topic using AI")
 with st.sidebar:
     st.header("🔑 API Configuration")
     api_key = st.text_input("Enter your Gemini API Key", type="password")
-    model_name = st.selectbox("Select AI Model", ["gemini-1.5-pro", "gemini-1.5-flash"], index=0)
+    model_name = st.selectbox("Select AI Model", ["gemini-2.0-flash","gemini-2.0-flash-lite","gemini-2.0-pro-exp-02-05","gemini-2.0-flash-thinking-exp-01-21","gemini-1.5-pro", "gemini-1.5-flash","gemini-1.5-flash-8b"], index=0)
     
     st.header("📚 History")
     if st.button("Clear History"):
