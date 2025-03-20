@@ -36,10 +36,6 @@ with st.sidebar:
                               "gemini-1.5-flash", "gemini-1.5-flash-8b"], 
                              index=0)
     
-    # View options
-    st.header("🔍 View Options")
-    view_mode = st.radio("Select View", ["Standard", "Compact", "Focused"], index=0)
-    
     # Theme settings
     st.header("🎨 Theme")
     theme_options = ["Light", "Dark", "Blue", "Green"]
@@ -204,90 +200,66 @@ def export_notes(content, format="txt"):
 # Main content area
 templates = load_prompt_templates()
 
-# Determine layout based on view mode
-if view_mode == "Standard":
-    col1, col2 = st.columns([2, 1])
-elif view_mode == "Compact":
-    col1, col2, col3 = st.columns([1, 1, 1])
-else:  # Focused
-    col1 = st
-    col2 = st
+# Use standard layout since view_mode is removed
+col1, col2 = st.columns([2, 1])
 
 # Topic and parameters input
-if view_mode == "Standard" or view_mode == "Focused":
-    with col1:
-        st.header("Create New Notes")
-        topic = st.text_area("Enter Topic", height=100, placeholder="Enter the topic you want to create notes for...")
+with col1:
+    st.header("Create New Notes")
+    topic = st.text_area("Enter Topic", height=100, placeholder="Enter the topic you want to create notes for...")
+    
+with col2:
+    st.header("Note Parameters")
+    note_type = st.selectbox("Note Format", ai_tools)
+    
+    # Show custom template field if selected
+    if note_type == "Custom Template":
+        template_name = st.text_input("Template Name", key="template_name")
         
-    with col2:
-        st.header("Note Parameters")
-        note_type = st.selectbox("Note Format", ai_tools)
+        # Load existing template if available
+        template_value = ""
+        if template_name in st.session_state.custom_templates:
+            template_value = st.session_state.custom_templates[template_name]
         
-        # Show custom template field if selected
-        if note_type == "Custom Template":
-            template_name = st.text_input("Template Name", key="template_name")
-            
-            # Load existing template if available
-            template_value = ""
-            if template_name in st.session_state.custom_templates:
-                template_value = st.session_state.custom_templates[template_name]
-            
-            custom_template = st.text_area("Custom Prompt Template", 
-                                         value=template_value,
-                                         height=150, 
-                                         placeholder="Create {detail_level} notes on {prompt}. Use {education_level} language...")
-            
-            # Save template button
-            if st.button("Save Template"):
-                st.session_state.custom_templates[template_name] = custom_template
-                st.success(f"Template '{template_name}' saved!")
+        custom_template = st.text_area("Custom Prompt Template", 
+                                     value=template_value,
+                                     height=150, 
+                                     placeholder="Create {detail_level} notes on {prompt}. Use {education_level} language...")
         
-        # Additional customization parameters
-        detail_level = st.select_slider(
-            "Detail Level",
-            options=["Brief", "Standard", "Comprehensive", "Expert"],
-            value="Standard"
+        # Save template button
+        if st.button("Save Template"):
+            st.session_state.custom_templates[template_name] = custom_template
+            st.success(f"Template '{template_name}' saved!")
+    
+    # Additional customization parameters
+    detail_level = st.select_slider(
+        "Detail Level",
+        options=["Brief", "Standard", "Comprehensive", "Expert"],
+        value="Standard"
+    )
+    
+    # Advanced parameters
+    with st.expander("Advanced Parameters"):
+        temperature = st.slider("Creativity Level", min_value=0.1, max_value=1.0, value=0.7, step=0.1)
+        
+        education_level = st.selectbox(
+            "Education Level",
+            ["Elementary", "Middle School", "High School", "Undergraduate", "Graduate", "Professional"],
+            index=3
         )
         
-        # Advanced parameters
-        with st.expander("Advanced Parameters"):
-            temperature = st.slider("Creativity Level", min_value=0.1, max_value=1.0, value=0.7, step=0.1)
-            
-            education_level = st.selectbox(
-                "Education Level",
-                ["Elementary", "Middle School", "High School", "Undergraduate", "Graduate", "Professional"],
-                index=3
-            )
-            
-            # Style parameters
-            tone_options = ["Formal", "Casual", "Academic", "Enthusiastic", "Technical", "Simplified"]
-            tone = st.selectbox("Tone", tone_options, index=0)
-            
-            language_style_options = ["Standard", "Creative", "Concise", "Elaborate", "Scientific", "Conversational"]
-            language_style = st.selectbox("Language Style", language_style_options, index=0)
-            
-            # Collect style parameters
-            style_params = {
-                "tone": tone,
-                "language_style": language_style
-            }
-else:  # Compact view
-    with col1:
-        st.header("Topic")
-        topic = st.text_area("Enter Topic", height=80, placeholder="Enter topic...")
-    
-    with col2:
-        st.header("Format")
-        note_type = st.selectbox("Note Format", ai_tools)
-        detail_level = st.select_slider("Detail", options=["Brief", "Standard", "Comprehensive", "Expert"], value="Standard")
-    
-    with col3:
-        st.header("Style")
-        tone = st.selectbox("Tone", ["Formal", "Casual", "Academic"], index=0)
-        language_style = st.selectbox("Style", ["Standard", "Creative", "Concise"], index=0)
-        temperature = st.slider("Creativity", min_value=0.1, max_value=1.0, value=0.7, step=0.1)
-        education_level = "Undergraduate"  # Default in compact view
-        style_params = {"tone": tone, "language_style": language_style}
+        # Style parameters
+        tone_options = ["Formal", "Casual", "Academic", "Enthusiastic", "Technical", "Simplified"]
+        tone = st.selectbox("Tone", tone_options, index=0)
+        
+        language_style_options = ["Standard", "Creative", "Concise", "Elaborate", "Scientific", "Conversational"]
+        language_style = st.selectbox("Language Style", language_style_options, index=0)
+        
+        # Collect style parameters
+        style_params = {
+            "tone": tone,
+            "language_style": language_style
+        }
 
 # Create formatted prompt with parameters
 if topic:
@@ -344,7 +316,7 @@ if topic:
                         st.success(f"Notes would be emailed to {email_address} (Email functionality not implemented in this demo)")
 
 # Display history
-if st.session_state.history and view_mode != "Focused":
+if st.session_state.history:
     st.markdown("---")
     st.header("Recent Notes")
     
