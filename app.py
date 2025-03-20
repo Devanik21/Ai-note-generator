@@ -36,10 +36,7 @@ with st.sidebar:
                               "gemini-1.5-flash", "gemini-1.5-flash-8b"], 
                              index=0)
     
-    # View options
-    st.header("🔍 View Options")
-    view_mode = st.radio("Select View", ["Standard", "Compact", "Focused"], index=0)
-    
+
     # Theme settings
     st.header("🎨 Theme")
     theme_options = ["Light", "Dark", "Blue", "Green"]
