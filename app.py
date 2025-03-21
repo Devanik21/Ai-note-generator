@@ -508,6 +508,7 @@ if topic:
                     if st.button("Save Refined Version"):
                         save_to_history(note_type, topic, refined)
                         st.success("Refined notes saved to history!")
+
             
             with tab3:
                 # NEW: Smart Personalized Learning
@@ -690,10 +691,28 @@ if st.session_state.spaced_repetition:
             st.success("No more cards due for review today!")
             st.session_state.current_card_index = 0
 
-# Apply theme setting
-if selected_theme != "Light":
-    st.markdown(f"<style>/* Custom {selected_theme} theme would be applied here */</style>", unsafe_allow_html=True)
+# Flashcard Statistics
+if st.session_state.spaced_repetition:
+    st.markdown("---")
+    st.header("📊 Flashcard Statistics")
+    
+    total_cards = len(st.session_state.spaced_repetition)
+    due_today = len([card for card in st.session_state.spaced_repetition 
+                     if card['next_review'] <= datetime.now()])
+    st.write(f"Total flashcards: {total_cards}")
+    st.write(f"Cards due today: {due_today}")
+    
+    # Cards by topic
+    topics = set(card['topic'] for card in st.session_state.spaced_repetition)
+    for topic in topics:
+        topic_cards = [card for card in st.session_state.spaced_repetition if card['topic'] == topic]
+        st.write(f"{topic}: {len(topic_cards)} cards")
+        
+    # Average ease factor
+    if total_cards > 0:
+        avg_ease = sum(card['ease_factor'] for card in st.session_state.spaced_repetition) / total_cards
+        st.write(f"Average ease factor: {avg_ease:.2f}")
 
-# Final Message
+# Footer
 st.markdown("---")
-st.markdown("### Thank You for Using AI Note Maker 🚀")
+st.markdown("Made with ❤️ using Streamlit and Gemini AI")
