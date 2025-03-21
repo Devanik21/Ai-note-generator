@@ -475,6 +475,39 @@ if topic:
             # Display results
             st.header(f"Notes on: {topic}")
             
+            # Create tabs for viewing, enhancement, learning, and exporting
+            tab1, tab4 = st.tabs(["View Notes",  "Export Options"])
+         
+            with tab1:
+                st.markdown(output)
+                
+                # Add to favorites option
+                if st.button("⭐ Add to Favorites"):
+                    save_to_history(note_type, topic, output, favorite=True)
+                    st.success("Added to favorites!")
+            
+
+            
+
+            with tab4:
+                export_format = st.selectbox("Export Format", ["Text (.txt)", "Markdown (.md)", "CSV (.csv)"])
+                format_extension = export_format.split('(')[1].replace(')', '').replace('.', '')
+                
+                export_content = export_notes(output, format_extension)
+                
+                st.download_button(
+                    label="Download Notes",
+                    data=export_content,
+                    file_name=f"notes_{topic.replace(' ', '_').lower()}_{datetime.now().strftime('%Y%m%d')}.{format_extension}",
+                    mime="text/plain"
+                )
+                
+                # Email option
+                with st.expander("Email Notes"):
+                    email_address = st.text_input("Email Address")
+                    if st.button("Email Notes") and email_address:
+                        st.success(f"Notes would be emailed to {email_address} (Email functionality not implemented in this demo)")
+
 
 # Display history
 if st.session_state.history:
