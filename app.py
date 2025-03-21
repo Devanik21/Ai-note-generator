@@ -1,10 +1,11 @@
 import streamlit as st
 import google.generativeai as genai
-from datetime import datetime
+from datetime import datetime, timedelta
 import pandas as pd
 import json
 import os
 import re
+import random
 
 # App title and configuration
 st.set_page_config(page_title="AI Note Maker", page_icon="📝", layout="wide")
@@ -18,6 +19,12 @@ if 'api_key' not in st.session_state:
     st.session_state.api_key = ""
 if 'custom_templates' not in st.session_state:
     st.session_state.custom_templates = {}
+if 'user_knowledge_level' not in st.session_state:
+    st.session_state.user_knowledge_level = {}
+if 'spaced_repetition' not in st.session_state:
+    st.session_state.spaced_repetition = []
+if 'quiz_scores' not in st.session_state:
+    st.session_state.quiz_scores = []
 
 # Main app header
 st.title("📝 AI Note Maker")
@@ -42,7 +49,7 @@ with st.sidebar:
     selected_theme = st.selectbox("Select Theme", theme_options, index=0)
     
     # History and Favorites tabs
-    tab1, tab2 = st.tabs(["History", "Favorites"])
+    tab1, tab2, tab3 = st.tabs(["History", "Favorites", "Learning"])
     
     with tab1:
         if st.button("Clear History"):
@@ -64,10 +71,27 @@ with st.sidebar:
                 st.session_state.favorites = []
                 st.success("Favorites cleared!")
     
+    with tab3:
+        # Display learning data
+        st.caption("Knowledge Levels:")
+        if st.session_state.user_knowledge_level:
+            for topic, level in st.session_state.user_knowledge_level.items():
+                st.caption(f"{topic}: {level}/5")
+        
+        st.caption("Upcoming Flashcards:")
+        due_cards = [card for card in st.session_state.spaced_repetition 
+                    if card['next_review'] <= datetime.now()]
+        st.caption(f"{len(due_cards)} cards due for review")
+        
+        st.caption("Quiz Performance:")
+        if st.session_state.quiz_scores:
+            avg_score = sum(score['score'] for score in st.session_state.quiz_scores) / len(st.session_state.quiz_scores)
+            st.caption(f"Average Score: {avg_score:.1f}%")
+    
     st.markdown("---")
     st.markdown("### About")
     st.markdown("AI Note Maker helps you create detailed notes on any topic using Google's Gemini AI.")
-    st.markdown("v2.0 - Advanced Controls")
+    st.markdown("v3.0 - Smart Learning Features")
 
 # Function to generate list of AI tools
 def generate_ai_tools():
@@ -130,6 +154,20 @@ def load_prompt_templates():
         
         "Case Study Analysis": "Create a comprehensive case study analysis on: {prompt}. Structure with clear sections for background, key issues, stakeholder analysis, alternatives, recommendations, and implementation plan. Include detailed analysis of causes and effects, supported by evidence and reasoning."
     }
+    
+    # New templates for enhanced features
+    templates.update({
+        "Auto-Summary": "Provide a concise 3-paragraph summary of the following notes, highlighting only the most critical concepts and takeaways: {content}",
+        
+        "Refinement": "Refine the following notes on '{topic}' to make them {refinement_type}. Maintain the original structure but improve the content based on the refinement request: {content}",
+        
+        "Adaptive Content": "Create {detail_level} notes on {prompt} specifically tailored for someone with a knowledge level of {knowledge_level}/5 in this subject. Adjust complexity, depth, and examples accordingly.",
+        
+        "Spaced Repetition Cards": "Based on the following notes, create 5-10 spaced repetition flashcards covering the most important concepts that would be suitable for long-term memorization: {content}",
+        
+        "Quiz Generation": "Create a 5-question quiz with multiple-choice answers based on the following notes. Include 4 options per question with only one correct answer. Format with the question followed by options labeled A, B, C, D, and mark the correct answer at the end: {content}"
+    })
+    
     return templates
 
 # Function to generate content with AI
@@ -185,7 +223,6 @@ def export_notes(content, format="txt"):
         return content  # Already in markdown format
     elif format == "csv":
         # Convert to CSV if content is structured appropriately
-        # This is a simple implementation and may need enhancement
         lines = content.split('\n')
         csv_lines = []
         for line in lines:
@@ -197,10 +234,132 @@ def export_notes(content, format="txt"):
     else:
         return content
 
+# New function for AI-powered summarization
+def summarize_notes(content, api_key, model_name):
+    templates = load_prompt_templates()
+    prompt = templates["Auto-Summary"].format(content=content)
+    
+    summary = generate_ai_content(
+        prompt, 
+        api_key, 
+        model_name, 
+        temperature=0.3, 
+        detail_level="Brief",
+        style_params={"tone": "Concise", "language_style": "Standard"}
+    )
+    
+    return summary
+
+# New function for adaptive refinement
+def refine_notes(content, topic, refinement_type, api_key, model_name):
+    templates = load_prompt_templates()
+    prompt = templates["Refinement"].format(
+        content=content,
+        topic=topic,
+        refinement_type=refinement_type
+    )
+    
+    refined = generate_ai_content(
+        prompt, 
+        api_key, 
+        model_name, 
+        temperature=0.5, 
+        detail_level="Standard",
+        style_params={"tone": "Academic", "language_style": "Standard"}
+    )
+    
+    return refined
+
+# New function for generating quiz from notes
+def generate_quiz(content, api_key, model_name):
+    templates = load_prompt_templates()
+    prompt = templates["Quiz Generation"].format(content=content)
+    
+    quiz = generate_ai_content(
+        prompt, 
+        api_key, 
+        model_name, 
+        temperature=0.7, 
+        detail_level="Standard",
+        style_params={"tone": "Enthusiastic", "language_style": "Conversational"}
+    )
+    
+    return quiz
+
+# New function to create spaced repetition cards
+def create_spaced_repetition(content, topic, api_key, model_name):
+    templates = load_prompt_templates()
+    prompt = templates["Spaced Repetition Cards"].format(content=content)
+    
+    cards_text = generate_ai_content(
+        prompt, 
+        api_key, 
+        model_name, 
+        temperature=0.5, 
+        detail_level="Standard",
+        style_params={"tone": "Academic", "language_style": "Concise"}
+    )
+    
+    # Process raw text into cards
+    cards = []
+    raw_cards = cards_text.split("---")
+    
+    for card_text in raw_cards:
+        if "Q:" in card_text and "A:" in card_text:
+            question = re.search(r"Q:(.*?)A:", card_text, re.DOTALL).group(1).strip()
+            answer = re.search(r"A:(.*)", card_text, re.DOTALL).group(1).strip()
+            
+            # Create card with spaced repetition metadata
+            card = {
+                "topic": topic,
+                "question": question,
+                "answer": answer,
+                "created": datetime.now(),
+                "next_review": datetime.now() + timedelta(days=1),
+                "ease_factor": 2.5,
+                "interval": 1,
+                "repetitions": 0
+            }
+            
+            cards.append(card)
+    
+    # Add to session state
+    for card in cards:
+        st.session_state.spaced_repetition.append(card)
+    
+    return len(cards)
+
+# New function to process quiz answers and calculate score
+def grade_quiz(quiz_text, user_answers):
+    # Extract correct answers from quiz text
+    correct_answers = []
+    questions = quiz_text.split("\n\n")
+    
+    for q in questions:
+        if "Correct answer:" in q:
+            correct = re.search(r"Correct answer: ([A-D])", q).group(1)
+            correct_answers.append(correct)
+    
+    # Calculate score
+    if len(correct_answers) != len(user_answers):
+        return 0
+    
+    score = sum(1 for correct, user in zip(correct_answers, user_answers) if correct == user)
+    percentage = (score / len(correct_answers)) * 100
+    
+    # Record score in history
+    st.session_state.quiz_scores.append({
+        "timestamp": datetime.now(),
+        "score": percentage,
+        "total_questions": len(correct_answers)
+    })
+    
+    return percentage
+
 # Main content area
 templates = load_prompt_templates()
 
-# Use standard layout since view_mode is removed
+# Use standard layout
 col1, col2 = st.columns([2, 1])
 
 # Topic and parameters input
@@ -255,6 +414,25 @@ with col2:
         language_style_options = ["Standard", "Creative", "Concise", "Elaborate", "Scientific", "Conversational"]
         language_style = st.selectbox("Language Style", language_style_options, index=0)
         
+        # NEW: Knowledge level for adaptive learning
+        if topic:
+            # Set default knowledge level or retrieve existing
+            if topic in st.session_state.user_knowledge_level:
+                default_knowledge = st.session_state.user_knowledge_level[topic]
+            else:
+                default_knowledge = 3
+                
+            knowledge_level = st.slider(
+                "Your Knowledge Level on This Topic", 
+                min_value=1, 
+                max_value=5, 
+                value=default_knowledge,
+                help="1=Beginner, 5=Expert"
+            )
+            
+            # Save knowledge level
+            st.session_state.user_knowledge_level[topic] = knowledge_level
+        
         # Collect style parameters
         style_params = {
             "tone": tone,
@@ -266,7 +444,16 @@ if topic:
     if note_type == "Custom Template" and "custom_template" in locals():
         base_prompt = custom_template.format(prompt=topic, detail_level=detail_level, education_level=education_level)
     else:
-        base_prompt = templates[note_type].format(prompt=topic)
+        # NEW: Use adaptive content template if knowledge level is set
+        if topic in st.session_state.user_knowledge_level:
+            knowledge_level = st.session_state.user_knowledge_level[topic]
+            base_prompt = templates["Adaptive Content"].format(
+                prompt=topic, 
+                detail_level=detail_level, 
+                knowledge_level=knowledge_level
+            )
+        else:
+            base_prompt = templates[note_type].format(prompt=topic)
     
     final_prompt = f"{base_prompt}\n\nAdditional parameters:\n- Detail level: {detail_level}\n- Education level: {education_level}"
     
@@ -285,8 +472,8 @@ if topic:
             # Display results
             st.header(f"Notes on: {topic}")
             
-            # Create tabs for viewing and exporting
-            tab1, tab2 = st.tabs(["View Notes", "Export Options"])
+            # Create tabs for viewing, enhancement, learning, and exporting
+            tab1, tab2, tab3, tab4 = st.tabs(["View Notes", "Enhance Notes", "Learn", "Export Options"])
             
             with tab1:
                 st.markdown(output)
@@ -297,6 +484,81 @@ if topic:
                     st.success("Added to favorites!")
             
             with tab2:
+                # NEW: AI-Powered Summarization & Refinement
+                st.subheader("🧠 AI Enhancement Tools")
+                
+                # Auto-summarization
+                if st.button("📝 Generate Summary"):
+                    summary = summarize_notes(output, st.session_state.api_key, model_name)
+                    st.markdown("### Summary")
+                    st.markdown(summary)
+                    
+                # Adaptive refinement
+                refinement_type = st.selectbox(
+                    "Refinement Type",
+                    ["clearer", "more concise", "more detailed", "simpler", "more technical", "more examples"]
+                )
+                
+                if st.button("🔄 Refine Notes"):
+                    refined = refine_notes(output, topic, refinement_type, st.session_state.api_key, model_name)
+                    st.markdown("### Refined Notes")
+                    st.markdown(refined)
+                    
+                    # Option to replace original notes with refined version
+                    if st.button("Save Refined Version"):
+                        save_to_history(note_type, topic, refined)
+                        st.success("Refined notes saved to history!")
+            
+            with tab3:
+                # NEW: Smart Personalized Learning
+                st.subheader("📚 Learning Tools")
+                
+                # Spaced repetition
+                if st.button("🔄 Create Flashcards for Spaced Repetition"):
+                    card_count = create_spaced_repetition(output, topic, st.session_state.api_key, model_name)
+                    st.success(f"Created {card_count} flashcards for spaced repetition!")
+                    
+                    # Show flashcards preview
+                    if card_count > 0:
+                        st.markdown("### Flashcard Preview")
+                        for i, card in enumerate(st.session_state.spaced_repetition[-card_count:]):
+                            with st.expander(f"Card {i+1}"):
+                                st.markdown(f"**Q:** {card['question']}")
+                                with st.expander("Show Answer"):
+                                    st.markdown(f"**A:** {card['answer']}")
+                
+                # Quiz creation
+                if st.button("🎮 Generate Quiz"):
+                    quiz = generate_quiz(output, st.session_state.api_key, model_name)
+                    st.session_state.current_quiz = quiz
+                    st.markdown("### Quiz")
+                    
+                    # Process quiz text to display as form
+                    questions = quiz.split("\n\n")
+                    user_answers = []
+                    
+                    for i, q in enumerate(questions):
+                        if q and "A)" in q:
+                            st.markdown(q.split("Correct answer:")[0])  # Show question without answer
+                            answer = st.radio(f"Question {i+1}", ["A", "B", "C", "D"], key=f"q_{i}")
+                            user_answers.append(answer)
+                    
+                    if user_answers and st.button("Submit Quiz"):
+                        score = grade_quiz(quiz, user_answers)
+                        st.success(f"Your score: {score:.1f}%")
+                        
+                        # Update knowledge level based on quiz performance
+                        if topic in st.session_state.user_knowledge_level:
+                            current_level = st.session_state.user_knowledge_level[topic]
+                            # Adjust level based on score
+                            if score > 90:
+                                st.session_state.user_knowledge_level[topic] = min(5, current_level + 0.5)
+                            elif score < 60:
+                                st.session_state.user_knowledge_level[topic] = max(1, current_level - 0.5)
+                            
+                            st.info(f"Knowledge level updated to: {st.session_state.user_knowledge_level[topic]}/5")
+            
+            with tab4:
                 export_format = st.selectbox("Export Format", ["Text (.txt)", "Markdown (.md)", "CSV (.csv)"])
                 format_extension = export_format.split('(')[1].replace(')', '').replace('.', '')
                 
@@ -340,8 +602,98 @@ if st.session_state.history:
                 st.session_state.clone_notes = item['output']
                 st.session_state.clone_topic = item['topic']
                 st.experimental_rerun()
+            
+            # NEW: Quick enhancement options
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("📝 Quick Summary", key=f"summary_{i}"):
+                    summary = summarize_notes(item['output'], st.session_state.api_key, model_name)
+                    st.markdown("### Summary")
+                    st.markdown(summary)
+            with col2:
+                if st.button("🎮 Quick Quiz", key=f"quiz_{i}"):
+                    quiz = generate_quiz(item['output'], st.session_state.api_key, model_name)
+                    st.markdown("### Quiz")
+                    st.markdown(quiz)
+
+# NEW: Display due flashcards for spaced repetition
+if st.session_state.spaced_repetition:
+    due_cards = [card for card in st.session_state.spaced_repetition 
+                if card['next_review'] <= datetime.now()]
+    
+    if due_cards:
+        st.markdown("---")
+        st.header(f"📆 Flashcards Due for Review ({len(due_cards)})")
+        
+        # Show one card at a time
+        if 'current_card_index' not in st.session_state:
+            st.session_state.current_card_index = 0
+        
+        if st.session_state.current_card_index < len(due_cards):
+            card = due_cards[st.session_state.current_card_index]
+            
+            st.markdown(f"**Topic:** {card['topic']}")
+            st.markdown(f"**Question:** {card['question']}")
+            
+            with st.expander("Show Answer"):
+                st.markdown(card['answer'])
+                
+                # Rate difficulty
+                col1, col2, col3, col4 = st.columns(4)
+                
+                with col1:
+                    if st.button("😕 Hard"):
+                        # Update card using SuperMemo SM-2 algorithm
+                        if card['repetitions'] == 0:
+                            card['interval'] = 1
+                        else:
+                            card['ease_factor'] = max(1.3, card['ease_factor'] - 0.2)
+                            card['interval'] = max(1, card['interval'] * card['ease_factor'])
+                        
+                        card['repetitions'] = 0
+                        card['next_review'] = datetime.now() + timedelta(days=card['interval'])
+                        st.session_state.current_card_index += 1
+                        st.experimental_rerun()
+                
+                with col2:
+                    if st.button("🙂 Okay"):
+                        # Update card using SuperMemo SM-2 algorithm
+                        if card['repetitions'] == 0:
+                            card['interval'] = 1
+                        else:
+                            card['interval'] = card['interval'] * card['ease_factor']
+                        
+                        card['repetitions'] += 1
+                        card['next_review'] = datetime.now() + timedelta(days=card['interval'])
+                        st.session_state.current_card_index += 1
+                        st.experimental_rerun()
+                
+                with col3:
+                    if st.button("😀 Easy"):
+                        # Update card using SuperMemo SM-2 algorithm
+                        if card['repetitions'] == 0:
+                            card['interval'] = 2
+                        else:
+                            card['ease_factor'] = min(2.5, card['ease_factor'] + 0.1)
+                            card['interval'] = card['interval'] * card['ease_factor']
+                        
+                        card['repetitions'] += 1
+                        card['next_review'] = datetime.now() + timedelta(days=card['interval'])
+                        st.session_state.current_card_index += 1
+                        st.experimental_rerun()
+                
+                with col4:
+                    if st.button("Skip"):
+                        st.session_state.current_card_index += 1
+                        st.experimental_rerun()
+        else:
+            st.success("No more cards due for review today!")
+            st.session_state.current_card_index = 0
 
 # Apply theme setting
 if selected_theme != "Light":
-    # This would typically be handled by custom CSS, but this is a placeholder
     st.markdown(f"<style>/* Custom {selected_theme} theme would be applied here */</style>", unsafe_allow_html=True)
+
+# Final Message
+st.markdown("---")
+st.markdown("### Thank You for Using AI Note Maker 🚀")
