@@ -469,12 +469,15 @@ if topic:
             # Save to history
             save_to_history(note_type, topic, output)
             
+            # Store generated notes in session state for later use
+            st.session_state.output = output
+            
             # Display results
             st.header(f"Notes on: {topic}")
             
             # Create tabs for viewing, enhancement, learning, and exporting
-            tab1, tab2, tab3, tab4 = st.tabs(["View Notes", "Enhance Notes", "Learn", "Export Options"])
-            
+            tab1, tab4 = st.tabs(["View Notes",  "Export Options"])
+         
             with tab1:
                 st.markdown(output)
                 
@@ -483,81 +486,9 @@ if topic:
                     save_to_history(note_type, topic, output, favorite=True)
                     st.success("Added to favorites!")
             
-            with tab2:
-                # NEW: AI-Powered Summarization & Refinement
-                st.subheader("🧠 AI Enhancement Tools")
-                
-                # Auto-summarization
-                if st.button("📝 Generate Summary"):
-                    summary = summarize_notes(output, st.session_state.api_key, model_name)
-                    st.markdown("### Summary")
-                    st.markdown(summary)
-                    
-                # Adaptive refinement
-                refinement_type = st.selectbox(
-                    "Refinement Type",
-                    ["clearer", "more concise", "more detailed", "simpler", "more technical", "more examples"]
-                )
-                
-                if st.button("🔄 Refine Notes"):
-                    refined = refine_notes(output, topic, refinement_type, st.session_state.api_key, model_name)
-                    st.markdown("### Refined Notes")
-                    st.markdown(refined)
-                    
-                    # Option to replace original notes with refined version
-                    if st.button("Save Refined Version"):
-                        save_to_history(note_type, topic, refined)
-                        st.success("Refined notes saved to history!")
+
             
-            with tab3:
-                # NEW: Smart Personalized Learning
-                st.subheader("📚 Learning Tools")
-                
-                # Spaced repetition
-                if st.button("🔄 Create Flashcards for Spaced Repetition"):
-                    card_count = create_spaced_repetition(output, topic, st.session_state.api_key, model_name)
-                    st.success(f"Created {card_count} flashcards for spaced repetition!")
-                    
-                    # Show flashcards preview
-                    if card_count > 0:
-                        st.markdown("### Flashcard Preview")
-                        for i, card in enumerate(st.session_state.spaced_repetition[-card_count:]):
-                            with st.expander(f"Card {i+1}"):
-                                st.markdown(f"**Q:** {card['question']}")
-                                with st.expander("Show Answer"):
-                                    st.markdown(f"**A:** {card['answer']}")
-                
-                # Quiz creation
-                if st.button("🎮 Generate Quiz"):
-                    quiz = generate_quiz(output, st.session_state.api_key, model_name)
-                    st.session_state.current_quiz = quiz
-                    st.markdown("### Quiz")
-                    
-                    # Process quiz text to display as form
-                    questions = quiz.split("\n\n")
-                    user_answers = []
-                    
-                    for i, q in enumerate(questions):
-                        if q and "A)" in q:
-                            st.markdown(q.split("Correct answer:")[0])  # Show question without answer
-                            answer = st.radio(f"Question {i+1}", ["A", "B", "C", "D"], key=f"q_{i}")
-                            user_answers.append(answer)
-                    
-                    if user_answers and st.button("Submit Quiz"):
-                        score = grade_quiz(quiz, user_answers)
-                        st.success(f"Your score: {score:.1f}%")
-                        
-                        # Update knowledge level based on quiz performance
-                        if topic in st.session_state.user_knowledge_level:
-                            current_level = st.session_state.user_knowledge_level[topic]
-                            # Adjust level based on score
-                            if score > 90:
-                                st.session_state.user_knowledge_level[topic] = min(5, current_level + 0.5)
-                            elif score < 60:
-                                st.session_state.user_knowledge_level[topic] = max(1, current_level - 0.5)
-                            
-                            st.info(f"Knowledge level updated to: {st.session_state.user_knowledge_level[topic]}/5")
-            
+
             with tab4:
                 export_format = st.selectbox("Export Format", ["Text (.txt)", "Markdown (.md)", "CSV (.csv)"])
                 format_extension = export_format.split('(')[1].replace(')', '').replace('.', '')
@@ -576,6 +507,7 @@ if topic:
                     email_address = st.text_input("Email Address")
                     if st.button("Email Notes") and email_address:
                         st.success(f"Notes would be emailed to {email_address} (Email functionality not implemented in this demo)")
+
 
 # Display history
 if st.session_state.history:
@@ -601,7 +533,7 @@ if st.session_state.history:
             if st.button("Create New Notes Based on These", key=f"clone_{i}"):
                 st.session_state.clone_notes = item['output']
                 st.session_state.clone_topic = item['topic']
-                st.experimental_rerun()
+                st.rerun()
             
             # NEW: Quick enhancement options
             col1, col2 = st.columns(2)
@@ -653,7 +585,7 @@ if st.session_state.spaced_repetition:
                         card['repetitions'] = 0
                         card['next_review'] = datetime.now() + timedelta(days=card['interval'])
                         st.session_state.current_card_index += 1
-                        st.experimental_rerun()
+                        st.rerun()
                 
                 with col2:
                     if st.button("🙂 Okay"):
@@ -666,7 +598,7 @@ if st.session_state.spaced_repetition:
                         card['repetitions'] += 1
                         card['next_review'] = datetime.now() + timedelta(days=card['interval'])
                         st.session_state.current_card_index += 1
-                        st.experimental_rerun()
+                        st.rerun()
                 
                 with col3:
                     if st.button("😀 Easy"):
@@ -680,20 +612,38 @@ if st.session_state.spaced_repetition:
                         card['repetitions'] += 1
                         card['next_review'] = datetime.now() + timedelta(days=card['interval'])
                         st.session_state.current_card_index += 1
-                        st.experimental_rerun()
+                        st.rerun()
                 
                 with col4:
                     if st.button("Skip"):
                         st.session_state.current_card_index += 1
-                        st.experimental_rerun()
+                        st.rerun()
         else:
             st.success("No more cards due for review today!")
             st.session_state.current_card_index = 0
 
-# Apply theme setting
-if selected_theme != "Light":
-    st.markdown(f"<style>/* Custom {selected_theme} theme would be applied here */</style>", unsafe_allow_html=True)
+# Flashcard Statistics
+if st.session_state.spaced_repetition:
+    st.markdown("---")
+    st.header("📊 Flashcard Statistics")
+    
+    total_cards = len(st.session_state.spaced_repetition)
+    due_today = len([card for card in st.session_state.spaced_repetition 
+                     if card['next_review'] <= datetime.now()])
+    st.write(f"Total flashcards: {total_cards}")
+    st.write(f"Cards due today: {due_today}")
+    
+    # Cards by topic
+    topics = set(card['topic'] for card in st.session_state.spaced_repetition)
+    for topic in topics:
+        topic_cards = [card for card in st.session_state.spaced_repetition if card['topic'] == topic]
+        st.write(f"{topic}: {len(topic_cards)} cards")
+        
+    # Average ease factor
+    if total_cards > 0:
+        avg_ease = sum(card['ease_factor'] for card in st.session_state.spaced_repetition) / total_cards
+        st.write(f"Average ease factor: {avg_ease:.2f}")
 
-# Final Message
+# Footer
 st.markdown("---")
-st.markdown("### Thank You for Using AI Note Maker 🚀")
+st.markdown("Made with ❤️ using Streamlit and Gemini AI")
