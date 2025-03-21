@@ -460,7 +460,7 @@ if topic:
     st.markdown("---")
     
     # Generate and display notes
-    if st.button("Generate Notes"):
+'''    if st.button("Generate Notes"):
         if not st.session_state.api_key:
             st.error("Please enter your Gemini API key in the sidebar")
         else:
@@ -588,6 +588,7 @@ if topic:
                     if st.button("Email Notes") and email_address:
                         st.success(f"Notes would be emailed to {email_address} (Email functionality not implemented in this demo)")
 
+'''
 # Display history
 if st.session_state.history:
     st.markdown("---")
