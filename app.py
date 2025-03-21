@@ -487,19 +487,23 @@ if topic:
                 # NEW: AI-Powered Summarization & Refinement
                 st.subheader("🧠 AI Enhancement Tools")
                 
-                # Auto-summarization
-                if st.button("📝 Generate Summary"):
-                    summary = summarize_notes(output, st.session_state.api_key, model_name)
-                    st.session_state.summary = summary
-                if "summary" in st.session_state:
-                    st.markdown("### Summary")
-                    st.markdown(st.session_state.summary)
+                # Ensure output exists in session state
+                if "output" not in st.session_state:
+                    st.warning("No notes available. Please generate notes first.")
+                else:
+                    # Auto-summarization
+                    if st.button("📝 Generate Summary"):
+                        summary = summarize_notes(st.session_state.output, st.session_state.api_key, model_name)
+                        st.session_state.summary = summary
+                    if "summary" in st.session_state:
+                        st.markdown("### Summary")
+                        st.markdown(st.session_state.summary)
                     
-                # Adaptive refinement
-                refinement_type = st.selectbox(
-                    "Refinement Type",
-                    ["clearer", "more concise", "more detailed", "simpler", "more technical", "more examples"]
-                )
+                    # Adaptive refinement
+                    refinement_type = st.selectbox(
+                        "Refinement Type",
+                        ["clearer", "more concise", "more detailed", "simpler", "more technical", "more examples"]
+                    )
 
                 
                 if st.button("🔄 Refine Notes"):
