@@ -460,7 +460,7 @@ if topic:
     st.markdown("---")
     
     # Generate and display notes
-'''    if st.button("Generate Notes"):
+    if st.button("Generate Notes"):
         if not st.session_state.api_key:
             st.error("Please enter your Gemini API key in the sidebar")
         else:
@@ -475,120 +475,7 @@ if topic:
             # Display results
             st.header(f"Notes on: {topic}")
             
-            # Create tabs for viewing, enhancement, learning, and exporting
-            tab1, tab2, tab3, tab4 = st.tabs(["View Notes", "Enhance Notes", "Learn", "Export Options"])
-         
-            with tab1:
-                st.markdown(output)
-                
-                # Add to favorites option
-                if st.button("⭐ Add to Favorites"):
-                    save_to_history(note_type, topic, output, favorite=True)
-                    st.success("Added to favorites!")
-            
-            with tab2:
-                # NEW: AI-Powered Summarization & Refinement
-                st.subheader("🧠 AI Enhancement Tools")
-                
-                # Ensure output exists in session state
-                if "output" not in st.session_state:
-                    st.warning("No notes available. Please generate notes first.")
-                else:
-                    # Auto-summarization
-                    if st.button("📝 Generate Summary"):
-                        summary = summarize_notes(st.session_state.output, st.session_state.api_key, model_name)
-                        st.session_state.summary = summary
-                    if "summary" in st.session_state:
-                        st.markdown("### Summary")
-                        st.markdown(st.session_state.summary)
-                    
-                    # Adaptive refinement
-                    refinement_type = st.selectbox(
-                        "Refinement Type",
-                        ["clearer", "more concise", "more detailed", "simpler", "more technical", "more examples"]
-                    )
 
-                
-                if st.button("🔄 Refine Notes"):
-                    refined = refine_notes(output, topic, refinement_type, st.session_state.api_key, model_name)
-                    st.markdown("### Refined Notes")
-                    st.markdown(refined)
-                    
-                    # Option to replace original notes with refined version
-                    if st.button("Save Refined Version"):
-                        save_to_history(note_type, topic, refined)
-                        st.success("Refined notes saved to history!")
-
-            
-            with tab3:
-                # NEW: Smart Personalized Learning
-                st.subheader("📚 Learning Tools")
-                
-                # Spaced repetition
-                if st.button("🔄 Create Flashcards for Spaced Repetition"):
-                    card_count = create_spaced_repetition(output, topic, st.session_state.api_key, model_name)
-                    st.success(f"Created {card_count} flashcards for spaced repetition!")
-                    
-                    # Show flashcards preview
-                    if card_count > 0:
-                        st.markdown("### Flashcard Preview")
-                        for i, card in enumerate(st.session_state.spaced_repetition[-card_count:]):
-                            with st.expander(f"Card {i+1}"):
-                                st.markdown(f"**Q:** {card['question']}")
-                                with st.expander("Show Answer"):
-                                    st.markdown(f"**A:** {card['answer']}")
-                
-                # Quiz creation
-                if st.button("🎮 Generate Quiz"):
-                    quiz = generate_quiz(output, st.session_state.api_key, model_name)
-                    st.session_state.current_quiz = quiz
-                    st.markdown("### Quiz")
-                    
-                    # Process quiz text to display as form
-                    questions = quiz.split("\n\n")
-                    user_answers = []
-                    
-                    for i, q in enumerate(questions):
-                        if q and "A)" in q:
-                            st.markdown(q.split("Correct answer:")[0])  # Show question without answer
-                            answer = st.radio(f"Question {i+1}", ["A", "B", "C", "D"], key=f"q_{i}")
-                            user_answers.append(answer)
-                    
-                    if user_answers and st.button("Submit Quiz"):
-                        score = grade_quiz(quiz, user_answers)
-                        st.success(f"Your score: {score:.1f}%")
-                        
-                        # Update knowledge level based on quiz performance
-                        if topic in st.session_state.user_knowledge_level:
-                            current_level = st.session_state.user_knowledge_level[topic]
-                            # Adjust level based on score
-                            if score > 90:
-                                st.session_state.user_knowledge_level[topic] = min(5, current_level + 0.5)
-                            elif score < 60:
-                                st.session_state.user_knowledge_level[topic] = max(1, current_level - 0.5)
-                            
-                            st.info(f"Knowledge level updated to: {st.session_state.user_knowledge_level[topic]}/5")
-            
-            with tab4:
-                export_format = st.selectbox("Export Format", ["Text (.txt)", "Markdown (.md)", "CSV (.csv)"])
-                format_extension = export_format.split('(')[1].replace(')', '').replace('.', '')
-                
-                export_content = export_notes(output, format_extension)
-                
-                st.download_button(
-                    label="Download Notes",
-                    data=export_content,
-                    file_name=f"notes_{topic.replace(' ', '_').lower()}_{datetime.now().strftime('%Y%m%d')}.{format_extension}",
-                    mime="text/plain"
-                )
-                
-                # Email option
-                with st.expander("Email Notes"):
-                    email_address = st.text_input("Email Address")
-                    if st.button("Email Notes") and email_address:
-                        st.success(f"Notes would be emailed to {email_address} (Email functionality not implemented in this demo)")
-
-'''
 # Display history
 if st.session_state.history:
     st.markdown("---")
