@@ -273,7 +273,7 @@ def refine_notes(content, topic, refinement_type, api_key, model_name):
 # New function for generating quiz from notes
 def generate_quiz(content, api_key, model_name):
     templates = load_prompt_templates()
-    prompt = f"Create a 10 -question quiz with multiple-choice answers based on the following notes. " \
+    prompt = f"Create a 20 -question quiz with multiple-choice answers based on the following notes. " \
              f"Include 4 options per question with only one correct answer. " \
              f"Format with the question followed by options labeled A, B, C, D, and mark the correct answer at the end:\n\n{content}"
     
