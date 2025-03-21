@@ -469,12 +469,15 @@ if topic:
             # Save to history
             save_to_history(note_type, topic, output)
             
+            # Store generated notes in session state for later use
+            st.session_state.output = output
+            
             # Display results
             st.header(f"Notes on: {topic}")
             
             # Create tabs for viewing, enhancement, learning, and exporting
             tab1, tab2, tab3, tab4 = st.tabs(["View Notes", "Enhance Notes", "Learn", "Export Options"])
-            
+         
             with tab1:
                 st.markdown(output)
                 
