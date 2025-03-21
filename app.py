@@ -601,7 +601,7 @@ if st.session_state.history:
             if st.button("Create New Notes Based on These", key=f"clone_{i}"):
                 st.session_state.clone_notes = item['output']
                 st.session_state.clone_topic = item['topic']
-                st.experimental_rerun()
+                st.rerun()
             
             # NEW: Quick enhancement options
             col1, col2 = st.columns(2)
@@ -653,7 +653,7 @@ if st.session_state.spaced_repetition:
                         card['repetitions'] = 0
                         card['next_review'] = datetime.now() + timedelta(days=card['interval'])
                         st.session_state.current_card_index += 1
-                        st.experimental_rerun()
+                        st.rerun()
                 
                 with col2:
                     if st.button("🙂 Okay"):
@@ -666,7 +666,7 @@ if st.session_state.spaced_repetition:
                         card['repetitions'] += 1
                         card['next_review'] = datetime.now() + timedelta(days=card['interval'])
                         st.session_state.current_card_index += 1
-                        st.experimental_rerun()
+                        st.rerun()
                 
                 with col3:
                     if st.button("😀 Easy"):
@@ -680,12 +680,12 @@ if st.session_state.spaced_repetition:
                         card['repetitions'] += 1
                         card['next_review'] = datetime.now() + timedelta(days=card['interval'])
                         st.session_state.current_card_index += 1
-                        st.experimental_rerun()
+                        st.rerun()
                 
                 with col4:
                     if st.button("Skip"):
                         st.session_state.current_card_index += 1
-                        st.experimental_rerun()
+                        st.rerun()
         else:
             st.success("No more cards due for review today!")
             st.session_state.current_card_index = 0
