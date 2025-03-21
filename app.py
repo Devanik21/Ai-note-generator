@@ -490,14 +490,17 @@ if topic:
                 # Auto-summarization
                 if st.button("📝 Generate Summary"):
                     summary = summarize_notes(output, st.session_state.api_key, model_name)
+                    st.session_state.summary = summary
+                if "summary" in st.session_state:
                     st.markdown("### Summary")
-                    st.markdown(summary)
+                    st.markdown(st.session_state.summary)
                     
                 # Adaptive refinement
                 refinement_type = st.selectbox(
                     "Refinement Type",
                     ["clearer", "more concise", "more detailed", "simpler", "more technical", "more examples"]
                 )
+
                 
                 if st.button("🔄 Refine Notes"):
                     refined = refine_notes(output, topic, refinement_type, st.session_state.api_key, model_name)
