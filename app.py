@@ -98,7 +98,6 @@ def generate_ai_tools():
     tools = [
         "Bullet Points",
         "Cornell Notes",
-        "Comprehensive Quiz",
         "Mind Map Structure",
         "Flashcards",
         "Summary Notes",
@@ -114,7 +113,7 @@ def generate_ai_tools():
     ]
     
     categories = {
-        "Note Formats": ["Bullet Points", "Cornell Notes","Comprehensive Quiz", "Mind Map Structure", "Summary Notes", "Detailed Explanation"],
+        "Note Formats": ["Bullet Points", "Cornell Notes",", "Mind Map Structure", "Summary Notes", "Detailed Explanation"],
         "Study Aids": ["Flashcards", "Question & Answer Format", "Key Concepts & Definitions", "Exam Preparation"],
         "Specialized": ["Timeline Format", "Comparative Analysis", "Research Notes", "Case Study Analysis"],
         "Custom": ["Custom Template"]
@@ -132,9 +131,6 @@ def load_prompt_templates():
         "Bullet Points": "Create comprehensive bullet point notes on: {prompt}. Format with clear hierarchical structure (main points and sub-points) using bullet symbols. Make notes concise yet complete, covering all important aspects. Use appropriate spacing for readability.",
         
         "Cornell Notes": "Create Cornell-style notes on: {prompt}. Structure with three sections: 1) Right column (main notes area): detailed content with clear paragraphs and hierarchical organization, 2) Left column (cue column): key questions, terms, and concepts that align with the main notes, 3) Bottom section: concise summary of the entire topic. Use proper formatting and spacing.",
-        
-        "Comprehensive Quiz": "Generate a comprehensive quiz on: {prompt}. Include a mix of multiple choice questions (MCQs), short answer, and true/false questions with a total of 30 questions. Ensure a range of difficulty levels. For MCQs, provide four options with one correct answer clearly marked. Group questions by subtopics if applicable. Include an answer key at the end.",
-    
         
         "Mind Map Structure": "Create a text-based mind map structure on: {prompt}. Format with the core concept in the center, main branches using level 1 headings, sub-branches using level 2 headings, and leaf nodes using bullet points. Use indentation to show relationships between concepts. Include all important relationships and hierarchies.",
         
