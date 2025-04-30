@@ -499,7 +499,7 @@ if topic:
             st.header(f"Notes on: {topic}")
             
             
-            tab1,  tab4 = st.tabs(["View Notes" "Export Options"])
+            tab1,  tab4 = st.tabs(["View Notes" ,"Export Options"])
          
             with tab1:
                 st.markdown(output)
