@@ -108,7 +108,7 @@ def generate_ai_tools():
         "Timeline Format",
         "Comparative Analysis",
         "Exam Preparation",
-        "Research Notes",
+        "Deep research",
         "Case Study Analysis",
         "Custom Template"
     ]
@@ -116,7 +116,7 @@ def generate_ai_tools():
     categories = {
         "Note Formats": ["Bullet Points", "Cornell Notes","Mind Map Structure", "Summary Notes", "Detailed Explanation"],
         "Study Aids": ["Flashcards", "Question & Answer Format", "Key Concepts & Definitions", "Exam Preparation"],
-        "Specialized": ["Timeline Format", "Comparative Analysis", "Research Notes", "Case Study Analysis"],
+        "Specialized": ["Timeline Format", "Comparative Analysis", "Deep research", "Case Study Analysis"],
         "Custom": ["Custom Template"]
     }
     
@@ -154,7 +154,7 @@ def load_prompt_templates():
         
         "Exam Preparation": "Create comprehensive exam preparation notes on: {prompt}. Include key definitions, formulas, concepts, potential exam questions, and model answers. Format with clear sections for different question types and difficulty levels. Highlight common pitfalls and strategies for tackling complex problems.",
         
-        "Research Notes": "Perform a comprehensive semantic analysis on: {prompt}. Your response should include: 1) An executive summary of the most relevant findings in 500 words, 2) Detailed analysis of 5-7 key aspects with explicit connections to the topic, 3) Identification of knowledge gaps or areas for expansion, 4) Suggested follow-up questions or research directions, 5) Cross-references to related concepts. Format with clear headings, relevant quotations from authorities, and analytical commentary. Provide a thorough analysis in 5000+ words that deeply examines the topic with clear sections for background, methodology, key findings, implications, potential gaps, and future directions. Use appropriate citations and references format.",
+        "Deep research": "Perform a comprehensive semantic analysis on: {prompt}. Your response should include: 1) An executive summary of the most relevant findings in 500 words, 2) Detailed analysis of 5-7 key aspects with explicit connections to the topic, 3) Identification of knowledge gaps or areas for expansion, 4) Suggested follow-up questions or research directions, 5) Cross-references to related concepts. Format with clear headings, relevant quotations from authorities, and analytical commentary. Provide a thorough analysis in 5000+ words that deeply examines the topic with clear sections for background, methodology, key findings, implications, potential gaps, and future directions. Use appropriate citations and references format.",
         
         "Case Study Analysis": "Create a comprehensive case study analysis on: {prompt}. Structure with clear sections for background, key issues, stakeholder analysis, alternatives, recommendations, and implementation plan. Include detailed analysis of causes and effects, supported by evidence and reasoning."
     }
