@@ -154,10 +154,46 @@ def load_prompt_templates():
         
         "Exam Preparation": "Create comprehensive exam preparation notes on: {prompt}. Include key definitions, formulas, concepts, potential exam questions, and model answers. Format with clear sections for different question types and difficulty levels. Highlight common pitfalls and strategies for tackling complex problems.",
         
-        "Deep research": "Perform a comprehensive semantic analysis on: {prompt}. Your response should include: 1) An executive summary of the most relevant findings in 500 words, 2) Detailed analysis of 5-7 key aspects with explicit connections to the topic, 3) Identification of knowledge gaps or areas for expansion, 4) Suggested follow-up questions or research directions, 5) Cross-references to related concepts. Format with clear headings, relevant quotations from authorities, and analytical commentary. Provide a thorough analysis in 5000+ words that deeply examines the topic with clear sections for background, methodology, key findings, implications, potential gaps, and future directions. Use appropriate citations and references format.",
-        
-        "Case Study Analysis": "Create a comprehensive case study analysis on: {prompt}. Structure with clear sections for background, key issues, stakeholder analysis, alternatives, recommendations, and implementation plan. Include detailed analysis of causes and effects, supported by evidence and reasoning."
-    }
+        "Deep research": """
+You are a high-level research assistant writing in-depth academic responses. 
+Structure the output as a formal article (~8000 tokens) with:
+1. Executive Summary  
+2. Introduction  
+3. History & Evolution  
+4. Concepts & Frameworks  
+5. Current State  
+6. Challenges  
+7. Applications  
+8. Comparisons  
+9. Future Outlook  
+10. Conclusion  
+11. References (Optional)
+
+Query:
+\"\"\"{user_prompt}\"\"\"
+"""
+
+        "Case Study Analysis": """
+You are a high-level research assistant writing comprehensive academic case study analyses. 
+Structure the response as a formal case study (~8000 tokens) with:
+1. Executive Summary  
+2. Introduction & Background  
+3. History & Context  
+4. Key Issues  
+5. Stakeholder Analysis  
+6. Root Cause Analysis  
+7. Strategic Alternatives  
+8. Recommendation  
+9. Implementation Plan  
+10. Challenges & Risk Mitigation  
+11. Conclusion  
+12. References (Optional)
+
+Query:
+\"\"\"{user_prompt}\"\"\"
+"""
+
+       }
     
     # New templates for enhanced features
     templates.update({
