@@ -499,7 +499,7 @@ if topic:
             st.header(f"Notes on: {topic}")
             
             
-            tab1, tab2, tab4 = st.tabs(["View Notes", "Deep Search", "Export Options"])
+            tab1,  tab4 = st.tabs(["View Notes" "Export Options"])
          
             with tab1:
                 st.markdown(output)
@@ -509,19 +509,9 @@ if topic:
                     save_to_history(note_type, topic, output, favorite=True)
                     st.success("Added to favorites!")
             
-            with tab2:
-                search_query = st.text_input("Enter search term or question about these notes")
-                if search_query and st.button("Deep Search"):
-                    search_results = deep_search_notes(search_query, output, st.session_state.api_key, model_name)
-                    st.subheader("Search Results")
-                    st.markdown(search_results)
 
 
-                    
-                    if st.button("Create New Note from Results"):
-                        new_topic = f"{topic} - {search_query}"
-                        save_to_history("Deep Search Results", new_topic, search_results)
-                        st.success(f"Created new note: {new_topic}")
+
 
 
 
