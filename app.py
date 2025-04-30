@@ -171,7 +171,7 @@ Structure the output as a formal article (~8000 tokens) with:
 
 Query:
 \"\"\"{user_prompt}\"\"\"
-"""
+""",
 
         "Case Study Analysis": """
 You are a high-level research assistant writing comprehensive academic case study analyses. 
