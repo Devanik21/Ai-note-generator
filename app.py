@@ -274,6 +274,23 @@ def refine_notes(content, topic, refinement_type, api_key, model_name):
     
     return refined
 
+
+# Function for deep search
+def deep_search_notes(query, content, api_key, model_name):
+    prompt = f"Given the following notes content, perform a deep semantic search for '{query}'. Return the most relevant sections that answer or relate to this query, along with brief explanations of why they're relevant:\n\n{content}"
+    
+    results = generate_ai_content(
+        prompt, 
+        api_key, 
+        model_name, 
+        temperature=0.3, 
+        detail_level="Standard",
+        style_params={"tone": "Analytical", "language_style": "Concise"}
+    )
+    
+    return results
+
+
 # New function for generating quiz from notes
 def generate_quiz(content, api_key, model_name):
     templates = load_prompt_templates()
@@ -481,8 +498,8 @@ if topic:
             # Display results
             st.header(f"Notes on: {topic}")
             
-            # Create tabs for viewing, enhancement, learning, and exporting
-            tab1, tab4 = st.tabs(["View Notes",  "Export Options"])
+            
+            tab1, tab2, tab4 = st.tabs(["View Notes", "Deep Search", "Export Options"])
          
             with tab1:
                 st.markdown(output)
@@ -492,10 +509,32 @@ if topic:
                     save_to_history(note_type, topic, output, favorite=True)
                     st.success("Added to favorites!")
             
+            with tab2:
+                search_query = st.text_input("Enter search term or question about these notes")
+                if search_query and st.button("Deep Search"):
+                    search_results = deep_search_notes(search_query, output, st.session_state.api_key, model_name)
+                    st.subheader("Search Results")
+                    st.markdown(search_results)
+
+
+                    
+                    if st.button("Create New Note from Results"):
+                        new_topic = f"{topic} - {search_query}"
+                        save_to_history("Deep Search Results", new_topic, search_results)
+                        st.success(f"Created new note: {new_topic}")
+
+
+
+
+
 
             
 
+            
+            
+
             with tab4:
+                
                 export_format = st.selectbox("Export Format", ["Text (.txt)", "Markdown (.md)", "CSV (.csv)"])
                 format_extension = export_format.split('(')[1].replace(')', '').replace('.', '')
                 
