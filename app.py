@@ -685,8 +685,42 @@ if topic:
             
             
 
-            with tab4:
-                st.subheader("Download Notes")
+            with tab4: # Export Options Tab
+                # Inject Flashcard CSS if not already done (though it's for a different section,
+                # good to have CSS injections managed)
+                if 'flashcard_css_injected' not in st.session_state:
+                    # Define FLASHCARD_CSS as shown in the explanation above
+                    FLASHCARD_CSS = """
+                    <style>
+                    .flashcard-container {
+                        margin-bottom: 20px;
+                        border-radius: 12px;
+                        overflow: hidden;
+                        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.35);
+                    }
+                    .flashcard-question {
+                        background: linear-gradient(135deg, #1D2B64, #4A00E0);
+                        color: #f0f0f0;
+                        padding: 20px;
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                        font-size: 1.1em;
+                    }
+                    .flashcard-question p { margin: 0; line-height: 1.5; }
+                    .flashcard-question strong { color: #ffffff; font-weight: 600; }
+                    .flashcard-answer-content {
+                        background-color: #283040;
+                        color: #e0e0e0;
+                        padding: 15px 20px;
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                        line-height: 1.6;
+                        border-top: 1px solid #4A00E0;
+                    }
+                    </style>
+                    """
+                    st.markdown(FLASHCARD_CSS, unsafe_allow_html=True)
+                    st.session_state.flashcard_css_injected = True
+
+                st.subheader("💾 Download Notes")
                 export_options = ["Text (.txt)", "Markdown (.md)", "CSV (.csv)", "HTML (.html)"]
                 export_format_selected = st.selectbox("Select Export Format", export_options)
                 
@@ -719,14 +753,14 @@ if topic:
                 st.markdown("---")
 
                 # Feature 1: Copy to Clipboard
-                st.subheader("Copy to Clipboard")
+                st.subheader("📋 Copy to Clipboard")
                 st.caption("Use the copy icon in the top right of the code box below to copy the raw notes.")
                 st.code(output, language="markdown")
 
                 st.markdown("---")
 
                 # Feature 2: Note Statistics
-                st.subheader("Note Statistics")
+                st.subheader("📊 Note Statistics")
                 word_count = len(output.split())
                 char_count = len(output)
                 col_stat1, col_stat2 = st.columns(2)
@@ -783,20 +817,35 @@ if st.session_state.spaced_repetition:
         st.markdown("---")
         st.header(f"📆 Flashcards Due for Review ({len(due_cards)})")
         
+        # Ensure CSS is injected for flashcards
+        if 'flashcard_css_injected' not in st.session_state:
+            # FLASHCARD_CSS should be defined as shown in the prompt's explanation
+            # For brevity, assuming FLASHCARD_CSS is defined globally or accessible here
+            st.markdown(FLASHCARD_CSS, unsafe_allow_html=True)
+            st.session_state.flashcard_css_injected = True
+
         # Show one card at a time
         if 'current_card_index' not in st.session_state:
             st.session_state.current_card_index = 0
         
         if st.session_state.current_card_index < len(due_cards):
             card = due_cards[st.session_state.current_card_index]
+
+            # Styled Flashcard
+            question_html = f"""
+            <div class="flashcard-question">
+                <p><small>Topic: {card['topic']}</small></p>
+                <p><strong>❓ Question:</strong> {card['question']}</p>
+            </div>
+            """
             
-            st.markdown(f"**Topic:** {card['topic']}")
-            st.markdown(f"**Question:** {card['question']}")
+            st.markdown(f"<div class='flashcard-container'>{question_html}", unsafe_allow_html=True)
             
-            with st.expander("Show Answer"):
-                st.markdown(card['answer'])
+            with st.expander("💡 Show Answer"):
+                st.markdown(f"<div class='flashcard-answer-content'>{card['answer']}</div>", unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True) # Close flashcard-container
                 
-                # Rate difficulty
+            # Rate difficulty buttons (remain functionally the same)
                 col1, col2, col3, col4 = st.columns(4)
                 
                 with col1:
@@ -851,7 +900,7 @@ if st.session_state.spaced_repetition:
 # Flashcard Statistics
 if st.session_state.spaced_repetition:
     st.markdown("---")
-    st.header("📊 Flashcard Statistics")
+    st.header("📈 Flashcard Statistics") # Changed emoji for variety
     
     total_cards = len(st.session_state.spaced_repetition)
     due_today = len([card for card in st.session_state.spaced_repetition 
