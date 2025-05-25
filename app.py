@@ -779,7 +779,7 @@ with main_tabs[0]: # Note Generation (existing main layout)
                             model_name                 # AI model selected in the sidebar
                         )
                     if num_created > 0:
-                        st.success(f"{num_created} flashcards added to the Spaced Repetition system!")
+                        st.success(f"{num_created} flashcards added! You can now find them in the '🧠 Spaced Repetition' tab.")
                     else:
                         st.warning("No flashcards could be created or parsed from the notes. The AI might not have returned content in the expected Q:/A:/--- format.")
                     st.rerun() # To update stats in the SR tab
