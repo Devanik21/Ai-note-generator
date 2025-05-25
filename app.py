@@ -342,7 +342,7 @@ Query:
 
         "Citation Generation": "Generate a citation in {style} format for the following source material. If it's a text snippet, try to identify key bibliographic information first. Source: {source_details}",
 
-        "Spaced Repetition Cards": "Based on the following notes, create 5-10 spaced repetition flashcards covering the most important concepts that would be suitable for long-term memorization: {content}",
+        "Spaced Repetition Cards": "Based on the following notes, create 5-10 spaced repetition flashcards covering the most important concepts that would be suitable for long-term memorization. Each flashcard should have a 'Q:' for the question and an 'A:' for the answer. Separate each flashcard with three hyphens ('---'). Content: {content}",
         
         "Quiz Generation": "Create a 5-question quiz with multiple-choice answers based on the following notes. Include 4 options per question with only one correct answer. Format with the question followed by options labeled A, B, C, D, and mark the correct answer at the end: {content}"
     })
@@ -541,26 +541,34 @@ def create_spaced_repetition(content, topic, api_key, model_name):
     
     for card_text in raw_cards:
         if "Q:" in card_text and "A:" in card_text:
-            question = re.search(r"Q:(.*?)A:", card_text, re.DOTALL).group(1).strip()
-            answer = re.search(r"A:(.*)", card_text, re.DOTALL).group(1).strip()
+            question_match = re.search(r"Q:(.*?)A:", card_text, re.DOTALL)
+            answer_match = re.search(r"A:(.*)", card_text, re.DOTALL)
+
+            if question_match and answer_match:
+                question = question_match.group(1).strip()
+                answer = answer_match.group(1).strip()
             
-            # Create card with spaced repetition metadata
-            card = {
-                "topic": topic,
-                "question": question,
-                "answer": answer,
-                "created": datetime.now(),
-                "next_review": datetime.now() + timedelta(days=1),
-                "ease_factor": 2.5,
-                "interval": 1,
-                "repetitions": 0
-            }
-            
-            cards.append(card)
+                # Create card with spaced repetition metadata
+                card = {
+                    "topic": topic,
+                    "question": question,
+                    "answer": answer,
+                    "created": datetime.now(),
+                    "next_review": datetime.now() + timedelta(days=1),
+                    "ease_factor": 2.5,
+                    "interval": 1,
+                    "repetitions": 0
+                }
+                
+                cards.append(card)
+            # else: # Optional: Log or notify if a card-like segment couldn't be parsed
+                # st.caption(f"Could not fully parse a card segment: {card_text[:50]}...")
     
     # Add to session state
-    for card in cards:
-        st.session_state.spaced_repetition.append(card)
+    if cards: # Only append if cards were successfully parsed
+        for card_item in cards: # Use a different variable name to avoid conflict with 'card' from outer scope if any
+            st.session_state.spaced_repetition.append(card_item)
+        st.session_state.spaced_repetition.sort(key=lambda x: x['next_review']) # Keep them sorted
     
     return len(cards)
 
@@ -760,6 +768,26 @@ with main_tabs[0]: # Note Generation (existing main layout)
             if st.button("⭐ Add to Favorites", key="fav_current_output"):
                 save_to_history(st.session_state.history[0]['tool'], current_topic_display, st.session_state.output, favorite=True)
                 st.success("Added to favorites!")
+
+            if st.button("➕ Create SR Cards from these Notes", key="sr_cards_current_output"):
+                if st.session_state.output and st.session_state.api_key:
+                    with st.spinner("AI is creating spaced repetition flashcards..."):
+                        num_created = create_spaced_repetition(
+                            st.session_state.output, # The content of the current notes
+                            current_topic_display,   # The topic of the current notes
+                            st.session_state.api_key,
+                            model_name                 # AI model selected in the sidebar
+                        )
+                    if num_created > 0:
+                        st.success(f"{num_created} flashcards added to the Spaced Repetition system!")
+                    else:
+                        st.warning("No flashcards could be created or parsed from the notes. The AI might not have returned content in the expected Q:/A:/--- format.")
+                    st.rerun() # To update stats in the SR tab
+                elif not st.session_state.api_key:
+                    st.error("API key is required to generate SR cards.")
+                else:
+                    st.warning("No notes available to create flashcards from.")
+
             if st.button("🎧 Listen to Notes", key="tts_current_output"):
                 if st.session_state.output:
                     try:
