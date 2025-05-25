@@ -84,6 +84,8 @@ if 'current_interactive_question_idx' not in st.session_state:
     st.session_state.current_interactive_question_idx = 0
 if 'study_tasks' not in st.session_state:
     st.session_state.study_tasks = []
+if 'selected_main_tab' not in st.session_state:
+    st.session_state.selected_main_tab = "📝 Note Generation" # Default tab
 
 # Main app header
 st.title("📝 AI Note Maker")
@@ -684,9 +686,20 @@ if st.session_state.get('interactive_quiz_active', False) and st.session_state.p
             st.rerun()
 
 # NEW: Main tabs for core functionality and new features
-main_tabs = st.tabs(["📝 Note Generation", "🔬 Research Assistant", "🎯 Study Hub", "✍️ Writing Enhancer", "🧠 Spaced Repetition", "📊 Analytics & History", "🛠️ Misc. Features"])
+# main_tabs = st.tabs(["📝 Note Generation", "🔬 Research Assistant", "🎯 Study Hub", "✍️ Writing Enhancer", "🧠 Spaced Repetition", "📊 Analytics & History", "🛠️ Misc. Features"])
 
-with main_tabs[0]: # Note Generation (existing main layout)
+tab_names = ["📝 Note Generation", "🔬 Research Assistant", "🎯 Study Hub", "✍️ Writing Enhancer", "🧠 Spaced Repetition", "📊 Analytics & History", "🛠️ Misc. Features"]
+
+st.session_state.selected_main_tab = st.radio(
+    "Main Navigation:",
+    tab_names,
+    index=tab_names.index(st.session_state.selected_main_tab), # Set current selection
+    horizontal=True,
+    key="main_tab_selector_radio" # Changed key to avoid conflict if old one lingers
+)
+
+
+if st.session_state.selected_main_tab == "📝 Note Generation": # Note Generation (existing main layout)
     col1_ng, col2_ng = st.columns([2, 1]) # Use different variable names to avoid conflict if any
 
     # Topic and parameters input
@@ -846,7 +859,7 @@ with main_tabs[0]: # Note Generation (existing main layout)
             stat_col1.metric(label="Word Count", value=word_count)
             stat_col2.metric(label="Character Count", value=char_count)
 
-with main_tabs[1]: # 🔬 Research Assistant
+if st.session_state.selected_main_tab == "🔬 Research Assistant":
     st.header("🔬 Research Assistant")
     st.markdown("Pose specific questions or sub-topics for a deeper dive. The AI will provide a focused response.")
 
@@ -917,7 +930,7 @@ with main_tabs[1]: # 🔬 Research Assistant
         st.subheader("🤔 Potential Follow-up Questions:")
         st.markdown(st.session_state.follow_up_questions_output)
 
-with main_tabs[2]: # Study Hub
+if st.session_state.selected_main_tab == "🎯 Study Hub":
     st.header("🎯 Study Hub")
     study_hub_tabs = st.tabs(["📚 Planner", "✍️ Citation Helper"])
 
@@ -994,7 +1007,7 @@ with main_tabs[2]: # Study Hub
             else:
                 st.warning("Please provide text/details for citation.")
 
-with main_tabs[3]: # ✍️ Writing Enhancer
+if st.session_state.selected_main_tab == "✍️ Writing Enhancer":
     st.header("✍️ Writing Enhancer")
     st.markdown("Improve your writing with AI assistance. Paste your text and choose an enhancement.")
 
@@ -1056,7 +1069,7 @@ with main_tabs[3]: # ✍️ Writing Enhancer
         st.markdown(st.session_state.writing_enhancer_output)
 
 # NEW: Display due flashcards for spaced repetition
-with main_tabs[4]: # Spaced Repetition
+if st.session_state.selected_main_tab == "🧠 Spaced Repetition":
     st.header("🧠 Spaced Repetition Flashcards")
     due_cards = [card for card in st.session_state.spaced_repetition 
                 if card['next_review'] <= datetime.now()]
@@ -1184,7 +1197,7 @@ with main_tabs[4]: # Spaced Repetition
     else:
         st.info("You haven't created any flashcards yet.")
 
-with main_tabs[5]: # Analytics & History
+if st.session_state.selected_main_tab == "📊 Analytics & History":
     st.header("📊 Analytics & Recent Activity")
     
     st.subheader("📜 Recent Notes")
@@ -1237,7 +1250,7 @@ with main_tabs[5]: # Analytics & History
     # For brevity, I'm omitting the direct copy-paste of that analytics block, but it should be placed here.
     st.caption("Advanced analytics will be displayed here.")
 
-with main_tabs[6]: # 🛠️ Misc. Features
+if st.session_state.selected_main_tab == "🛠️ Misc. Features":
     st.header("🛠️ Additional & Miscellaneous Features")
     st.markdown("This section will house a variety of extra tools and utilities. Use expanders below to access each feature.")
     
