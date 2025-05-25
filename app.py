@@ -10,6 +10,11 @@ import random
 # App title and configuration
 st.set_page_config(page_title="AI Note Maker", page_icon="📝", layout="wide")
 
+# Constants for selectbox options
+DETAIL_LEVEL_OPTIONS = ["Brief", "Standard", "Comprehensive", "Expert"]
+TONE_OPTIONS = ["Formal", "Casual", "Academic", "Enthusiastic", "Technical", "Simplified"]
+LANGUAGE_STYLE_OPTIONS = ["Standard", "Creative", "Concise", "Elaborate", "Scientific", "Conversational"]
+
 # Initialize session state
 if 'history' not in st.session_state:
     st.session_state.history = []
@@ -25,6 +30,14 @@ if 'spaced_repetition' not in st.session_state:
     st.session_state.spaced_repetition = []
 if 'quiz_scores' not in st.session_state:
     st.session_state.quiz_scores = []
+if 'default_detail_level' not in st.session_state:
+    st.session_state.default_detail_level = "Standard"
+if 'default_tone' not in st.session_state:
+    st.session_state.default_tone = "Formal"
+if 'default_language_style' not in st.session_state:
+    st.session_state.default_language_style = "Standard"
+if 'topic_suggestions' not in st.session_state:
+    st.session_state.topic_suggestions = []
 
 # Main app header
 st.title("📝 AI Note Maker")
@@ -37,12 +50,40 @@ with st.sidebar:
     if saved_api_key != st.session_state.api_key:
         st.session_state.api_key = saved_api_key
     
-    model_name = st.selectbox("Select AI Model", 
-                             ["gemini-2.0-flash","gemini-2.5-flash-preview-04-17","gemini-2.5-pro-preview-03-25" "gemini-2.0-flash-lite", "gemini-2.0-pro-exp-02-05", 
-                              "gemini-2.0-flash-thinking-exp-01-21", "gemini-1.5-pro", 
-                              "gemini-1.5-flash", "gemini-1.5-flash-8b"], 
+    model_name = st.selectbox("Select AI Model",
+                             ["gemini-2.0-flash", "gemini-2.5-flash-preview-04-17", "gemini-2.5-pro-preview-03-25", "gemini-2.0-flash-lite", "gemini-2.0-pro-exp-02-05",
+                              "gemini-2.0-flash-thinking-exp-01-21", "gemini-1.5-pro",
+                              "gemini-1.5-flash", "gemini-1.5-flash-8b"],
                              index=0)
     
+    st.header("⚙️ User Preferences")
+    pref_detail_level = st.selectbox(
+        "Default Detail Level",
+        options=DETAIL_LEVEL_OPTIONS,
+        index=DETAIL_LEVEL_OPTIONS.index(st.session_state.default_detail_level)
+    )
+    if pref_detail_level != st.session_state.default_detail_level:
+        st.session_state.default_detail_level = pref_detail_level
+        st.rerun()
+
+    pref_tone = st.selectbox(
+        "Default Tone",
+        options=TONE_OPTIONS,
+        index=TONE_OPTIONS.index(st.session_state.default_tone)
+    )
+    if pref_tone != st.session_state.default_tone:
+        st.session_state.default_tone = pref_tone
+        st.rerun()
+
+    pref_language_style = st.selectbox(
+        "Default Language Style",
+        options=LANGUAGE_STYLE_OPTIONS,
+        index=LANGUAGE_STYLE_OPTIONS.index(st.session_state.default_language_style)
+    )
+    if pref_language_style != st.session_state.default_language_style:
+        st.session_state.default_language_style = pref_language_style
+        st.rerun()
+
     # Theme settings
     st.header("🎨 Theme")
     theme_options = ["Light", "Dark", "Blue", "Green"]
@@ -87,6 +128,56 @@ with st.sidebar:
         if st.session_state.quiz_scores:
             avg_score = sum(score['score'] for score in st.session_state.quiz_scores) / len(st.session_state.quiz_scores)
             st.caption(f"Average Score: {avg_score:.1f}%")
+
+        st.markdown("---")
+        st.subheader("🚀 Topic Exploration")
+        exploration_interest = st.text_input("Interest to explore related topics:", key="exploration_interest_input")
+        if st.button("Suggest Related Topics"):
+            if not st.session_state.api_key:
+                st.error("API key is required for topic suggestion.")
+            elif not exploration_interest:
+                st.warning("Please enter an interest to get suggestions.")
+            else:
+                with st.spinner("AI is brainstorming..."):
+                    # This is a placeholder. In a real scenario, you'd call the AI.
+                    # prompt = f"Suggest 3-5 related academic topics for further study based on the interest: '{exploration_interest}'. Provide a brief (1-sentence) explanation for each suggestion."
+                    # suggestions_text = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.7, "Brief", {"tone": "Creative", "language_style": "Concise"})
+                    # st.session_state.topic_suggestions = suggestions_text.split('\n') # Process appropriately
+                    st.session_state.topic_suggestions = [
+                        f"Exploring sub-field A of {exploration_interest}",
+                        f"The history of {exploration_interest}",
+                        f"Future trends in {exploration_interest}"
+                    ]
+                st.success("Suggestions generated!")
+
+        if st.session_state.get('topic_suggestions'):
+            st.markdown("**Suggested Topics:**")
+            for suggestion in st.session_state.topic_suggestions:
+                st.caption(f"- {suggestion}")
+
+        st.markdown("---")
+        st.subheader("📈 Advanced Analytics")
+        notes_this_week = 0
+        one_week_ago = datetime.now() - timedelta(days=7)
+        for item in st.session_state.history:
+            try:
+                item_timestamp = datetime.strptime(item['timestamp'], "%Y-%m-%d %H:%M:%S")
+                if item_timestamp > one_week_ago:
+                    notes_this_week += 1
+            except ValueError:
+                pass # Ignore items with unexpected timestamp format
+        st.metric("Notes Generated (Last 7 Days)", notes_this_week)
+
+        if st.session_state.history:
+            from collections import Counter
+            tool_counts = Counter(item['tool'] for item in st.session_state.history)
+            most_common_tool, most_common_count = tool_counts.most_common(1)[0] if tool_counts else ("N/A", 0)
+            st.metric("Most Used Note Format", f"{most_common_tool} ({most_common_count} times)")
+        
+        focus_areas = [topic for topic, level in st.session_state.user_knowledge_level.items() if level < 3]
+        st.caption(f"Learning Focus Areas (Knowledge < 3/5): {len(focus_areas)}")
+        for area in focus_areas[:3]: # Display top 3
+            st.caption(f"- {area} (Level: {st.session_state.user_knowledge_level[area]}/5)")
     
     st.markdown("---")
     st.markdown("### About")
@@ -452,8 +543,8 @@ with col2:
     # Additional customization parameters
     detail_level = st.select_slider(
         "Detail Level",
-        options=["Brief", "Standard", "Comprehensive", "Expert"],
-        value="Standard"
+        options=DETAIL_LEVEL_OPTIONS,
+        value=st.session_state.default_detail_level  # Use preference
     )
     
     # Advanced parameters
@@ -466,12 +557,10 @@ with col2:
             index=3
         )
         
-        # Style parameters
-        tone_options = ["Formal", "Casual", "Academic", "Enthusiastic", "Technical", "Simplified"]
-        tone = st.selectbox("Tone", tone_options, index=0)
+        # Style parameters using preferences as default
+        tone = st.selectbox("Tone", TONE_OPTIONS, index=TONE_OPTIONS.index(st.session_state.default_tone))
         
-        language_style_options = ["Standard", "Creative", "Concise", "Elaborate", "Scientific", "Conversational"]
-        language_style = st.selectbox("Language Style", language_style_options, index=0)
+        language_style = st.selectbox("Language Style", LANGUAGE_STYLE_OPTIONS, index=LANGUAGE_STYLE_OPTIONS.index(st.session_state.default_language_style))
         
         # NEW: Knowledge level for adaptive learning
         if topic:
