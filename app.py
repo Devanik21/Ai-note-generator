@@ -5,6 +5,7 @@ import pandas as pd
 import json
 import os
 import re
+import markdown # For HTML export
 import random
 
 # App title and configuration
@@ -351,17 +352,54 @@ def export_notes(content, format="txt"):
     if format == "txt":
         return content
     elif format == "md":
-        return content  # Already in markdown format
+        # The content from Gemini is often already markdown-like.
+        return content
     elif format == "csv":
-        # Convert to CSV if content is structured appropriately
         lines = content.split('\n')
-        csv_lines = []
+        csv_output_lines = []
         for line in lines:
-            # Replace markdown formatting and convert to CSV
-            line = re.sub(r'^\s*[-*]', '', line).strip()
-            if line:
-                csv_lines.append(line)
-        return '\n'.join(csv_lines)
+            # Remove common markdown list/block prefixes
+            cleaned_line = re.sub(r'^\s*[-*#>]+\s*', '', line).strip()
+            if cleaned_line: # Only process non-empty lines
+                # Escape double quotes
+                cleaned_line_csv = cleaned_line.replace('"', '""')
+                # Enclose in double quotes if it contains a comma, a double quote, or needs it
+                if ',' in cleaned_line_csv or '"' in cleaned_line_csv or ' ' in cleaned_line_csv or '\n' in cleaned_line_csv:
+                    csv_output_lines.append(f'"{cleaned_line_csv}"')
+                else:
+                    csv_output_lines.append(cleaned_line_csv)
+        return '\n'.join(csv_output_lines)
+    elif format == "html":
+        # Convert markdown content to HTML
+        html_body = markdown.markdown(content, extensions=['fenced_code', 'tables', 'extra'])
+        html_full = f"""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notes</title>
+    <style>
+        body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"; line-height: 1.6; padding: 20px; max-width: 800px; margin: auto; color: #333; }}
+        h1, h2, h3, h4, h5, h6 {{ color: #1a1a1a; margin-top: 1.5em; margin-bottom: 0.5em; }}
+        p {{ margin-bottom: 1em; }}
+        ul, ol {{ padding-left: 20px; margin-bottom: 1em; }}
+        li {{ margin-bottom: 0.25em; }}
+        code {{ background-color: #f0f0f0; padding: 0.2em 0.4em; margin: 0; font-size: 85%; border-radius: 3px; font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;}}
+        pre {{ background-color: #f0f0f0; padding: 10px; border-radius: 5px; overflow-x: auto; }}
+        pre code {{ background-color: transparent; padding: 0; margin: 0; font-size: inherit; border-radius: 0; }}
+        table {{ border-collapse: collapse; width: 100%; margin-bottom: 1em; border: 1px solid #ddd; }}
+        th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
+        th {{ background-color: #f9f9f9; }}
+        blockquote {{ border-left: 4px solid #ccc; padding-left: 10px; color: #555; margin-left: 0; margin-right: 0; font-style: italic;}}
+    </style>
+</head>
+<body>
+{html_body}
+</body>
+</html>
+"""
+        return html_full
     else:
         return content
 
@@ -648,19 +686,54 @@ if topic:
             
 
             with tab4:
+                st.subheader("Download Notes")
+                export_options = ["Text (.txt)", "Markdown (.md)", "CSV (.csv)", "HTML (.html)"]
+                export_format_selected = st.selectbox("Select Export Format", export_options)
                 
-                export_format = st.selectbox("Export Format", ["Text (.txt)", "Markdown (.md)", "CSV (.csv)"])
-                format_extension = export_format.split('(')[1].replace(')', '').replace('.', '')
+                # Determine format_extension and mime_type based on selection
+                if export_format_selected == "Text (.txt)":
+                    format_extension = "txt"
+                    mime_type = "text/plain"
+                elif export_format_selected == "Markdown (.md)":
+                    format_extension = "md"
+                    mime_type = "text/markdown"
+                elif export_format_selected == "CSV (.csv)":
+                    format_extension = "csv"
+                    mime_type = "text/csv"
+                elif export_format_selected == "HTML (.html)":
+                    format_extension = "html"
+                    mime_type = "text/html"
+                else: # Default fallback
+                    format_extension = "txt"
+                    mime_type = "text/plain"
                 
                 export_content = export_notes(output, format_extension)
                 
                 st.download_button(
-                    label="Download Notes",
+                    label=f"Download as .{format_extension}",
                     data=export_content,
                     file_name=f"notes_{topic.replace(' ', '_').lower()}_{datetime.now().strftime('%Y%m%d')}.{format_extension}",
-                    mime="text/plain"
+                    mime=mime_type
                 )
-                # Email option removed
+                
+                st.markdown("---")
+
+                # Feature 1: Copy to Clipboard
+                st.subheader("Copy to Clipboard")
+                st.caption("Use the copy icon in the top right of the code box below to copy the raw notes.")
+                st.code(output, language="markdown")
+
+                st.markdown("---")
+
+                # Feature 2: Note Statistics
+                st.subheader("Note Statistics")
+                word_count = len(output.split())
+                char_count = len(output)
+                col_stat1, col_stat2 = st.columns(2)
+                with col_stat1:
+                    st.metric(label="Word Count", value=word_count)
+                with col_stat2:
+                    st.metric(label="Character Count", value=char_count)
 
 # Display history
 if st.session_state.history:
