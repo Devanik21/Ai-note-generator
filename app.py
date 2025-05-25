@@ -6,6 +6,8 @@ import json
 import os
 import re
 import markdown # For HTML export
+from gtts import gTTS # For Text-to-Speech
+import io # For Text-to-Speech
 import random
 
 # App title and configuration
@@ -40,10 +42,14 @@ if 'default_language_style' not in st.session_state:
 if 'topic_suggestions' not in st.session_state:
     st.session_state.topic_suggestions = []
 # New session states for the 4 features
-if 'interactive_quiz_data' not in st.session_state:
-    st.session_state.interactive_quiz_data = None # Will store quiz text for interactive mode
+if 'parsed_quiz_questions' not in st.session_state: # Changed from interactive_quiz_data
+    st.session_state.parsed_quiz_questions = []
 if 'interactive_quiz_active' not in st.session_state:
     st.session_state.interactive_quiz_active = False
+if 'user_quiz_answers' not in st.session_state:
+    st.session_state.user_quiz_answers = {}
+if 'quiz_score' not in st.session_state:
+    st.session_state.quiz_score = 0
 if 'current_interactive_question_idx' not in st.session_state:
     st.session_state.current_interactive_question_idx = 0
 if 'study_tasks' not in st.session_state:
@@ -303,7 +309,9 @@ Query:
         "Refinement": "Refine the following notes on '{topic}' to make them {refinement_type}. Maintain the original structure but improve the content based on the refinement request: {content}",
         
         "Adaptive Content": "Create {detail_level} notes on {prompt} specifically tailored for someone with a knowledge level of {knowledge_level}/5 in this subject. Adjust complexity, depth, and examples accordingly.",
-        
+
+        "Citation Generation": "Generate a citation in {style} format for the following source material. If it's a text snippet, try to identify key bibliographic information first. Source: {source_details}",
+
         "Spaced Repetition Cards": "Based on the following notes, create 5-10 spaced repetition flashcards covering the most important concepts that would be suitable for long-term memorization: {content}",
         
         "Quiz Generation": "Create a 5-question quiz with multiple-choice answers based on the following notes. Include 4 options per question with only one correct answer. Format with the question followed by options labeled A, B, C, D, and mark the correct answer at the end: {content}"
@@ -553,6 +561,36 @@ def grade_quiz(quiz_text, user_answers):
     
     return percentage
 # Main content area
+
+# --- Helper function for Interactive Quiz ---
+def parse_quiz_text(quiz_text):
+    questions = []
+    # Regex to find question, options, and correct answer
+    # This regex assumes a fairly consistent format like:
+    # 1. Question text?
+    # A. Option A
+    # B. Option B
+    # C. Option C
+    # D. Option D
+    # Correct answer: B
+    pattern = re.compile(
+        r"(\d+\.\s*.*?)\n"  # Question (e.g., "1. What is...")
+        r"A\.\s*(.*?)\n"    # Option A
+        r"B\.\s*(.*?)\n"    # Option B
+        r"C\.\s*(.*?)\n"    # Option C
+        r"D\s*[:.]\s*(.*?)\n"  # Option D (allowing for slight variations like "D." or "D:")
+        r"Correct answer:\s*([A-D])", # Correct answer
+        re.DOTALL | re.IGNORECASE
+    )
+    matches = pattern.findall(quiz_text)
+    for match in matches:
+        questions.append({
+            "question": match[0].strip(),
+            "options": {"A": match[1].strip(), "B": match[2].strip(), "C": match[3].strip(), "D": match[4].strip()},
+            "correct": match[5].strip().upper()
+        })
+    return questions
+
 templates = load_prompt_templates()
 
 # Use standard layout
@@ -681,8 +719,19 @@ if topic:
                     st.success("Added to favorites!")
                 
                 # 4. Text-to-Speech (TTS) for Notes (Basic Stub)
-                if st.button("🎧 Listen to Notes (TTS)"):
-                    st.info("Text-to-Speech functionality will be implemented here. For now, imagine the notes being read out loud!")
+                if st.button("🎧 Listen to Notes"):
+                    if output:
+                        try:
+                            with st.spinner("Synthesizing audio... 🔊"):
+                                tts = gTTS(text=output, lang='en')
+                                audio_fp = io.BytesIO()
+                                tts.write_to_fp(audio_fp)
+                                audio_fp.seek(0) # Important: move cursor to the beginning of the BytesIO object
+                                st.audio(audio_fp, format='audio/mp3')
+                        except Exception as e:
+                            st.error(f"Error generating audio: {e}")
+                    else:
+                        st.warning("No notes available to read.")
 
             
 
@@ -820,14 +869,62 @@ if st.session_state.history:
                 if st.button("🎮 Quick Quiz", key=f"quiz_{i}"):
                     quiz = generate_quiz(item['output'], st.session_state.api_key, model_name)
                     st.markdown("### Quiz")
-                    st.markdown(quiz) # Display the generated quiz text
-                    st.session_state.interactive_quiz_data = quiz # Store for interactive mode
+                    st.markdown(quiz)
+                    
+                    parsed_questions = parse_quiz_text(quiz)
+                    if parsed_questions:
+                        st.session_state.parsed_quiz_questions = parsed_questions
+                    else:
+                        st.warning("Could not parse the quiz for interactive mode. Please check AI output format.")
+                        st.session_state.parsed_quiz_questions = []
+
                     if st.button("🚀 Start Interactive Quiz", key=f"interactive_quiz_start_{i}"):
-                        st.session_state.interactive_quiz_active = True
-                        st.session_state.current_interactive_question_idx = 0
-                        # In a real scenario, you'd parse quiz_data here
-                        st.info("Interactive quiz mode started! (Placeholder)")
-                        st.rerun()
+                        if st.session_state.parsed_quiz_questions:
+                            st.session_state.interactive_quiz_active = True
+                            st.session_state.current_interactive_question_idx = 0
+                            st.session_state.user_quiz_answers = {}
+                            st.session_state.quiz_score = 0
+                            st.rerun()
+                        else:
+                            st.error("Cannot start interactive quiz. Questions not parsed correctly.")
+
+# --- Interactive Quiz Display Logic ---
+if st.session_state.get('interactive_quiz_active', False) and st.session_state.parsed_quiz_questions:
+    st.header("📝 Interactive Quiz")
+    questions = st.session_state.parsed_quiz_questions
+    current_idx = st.session_state.current_interactive_question_idx
+
+    if current_idx < len(questions):
+        q = questions[current_idx]
+        st.subheader(f"Question {current_idx + 1}/{len(questions)}")
+        st.markdown(q["question"])
+        
+        options_keys = list(q["options"].keys())
+        options_values = [f"{key}. {q['options'][key]}" for key in options_keys]
+        
+        user_answer_key = f"quiz_q_{current_idx}"
+        # Use st.radio and store the selected *option text* for now, then map back to A, B, C, D
+        selected_option_text = st.radio("Your Answer:", options_values, key=user_answer_key, index=None)
+
+        if st.button("Next Question", key=f"next_q_{current_idx}"):
+            if selected_option_text:
+                # Extract the letter (A, B, C, D) from the selected_option_text
+                selected_letter = selected_option_text.split('.')[0].strip().upper()
+                st.session_state.user_quiz_answers[current_idx] = selected_letter
+                if selected_letter == q["correct"]:
+                    st.session_state.quiz_score += 1
+                st.session_state.current_interactive_question_idx += 1
+            else:
+                st.warning("Please select an answer.")
+            st.rerun()
+    else:
+        st.subheader("🎉 Quiz Completed!")
+        score_percentage = (st.session_state.quiz_score / len(questions)) * 100 if questions else 0
+        st.metric("Your Score", f"{st.session_state.quiz_score}/{len(questions)} ({score_percentage:.2f}%)")
+        st.session_state.interactive_quiz_active = False # Reset for next time
+        # Optionally, show correct answers vs user answers here
+        if st.button("Back to Notes"):
+            st.rerun()
 
 # NEW: Main tabs for core functionality and new features
 main_tabs = st.tabs(["📝 Note Generation", "🎯 Study Hub", "🧠 Spaced Repetition", "📊 Analytics & History"])
@@ -856,42 +953,74 @@ with main_tabs[1]: # Study Hub
 
     with study_hub_tabs[0]: # Planner
         st.subheader("My Study Tasks")
-        new_task_description = st.text_input("Enter new task description:")
-        new_task_due_date = st.date_input("Due Date (optional):", value=None)
-        if st.button("➕ Add Task"):
-            if new_task_description:
-                st.session_state.study_tasks.append({
-                    "id": random.randint(10000, 99999),
-                    "description": new_task_description,
-                    "due_date": new_task_due_date,
-                    "completed": False
-                })
-                st.success(f"Task '{new_task_description}' added!")
-                new_task_description = "" # Clear input
-            else:
-                st.warning("Task description cannot be empty.")
+        
+        with st.form("new_task_form", clear_on_submit=True):
+            new_task_description = st.text_input("Enter new task description:")
+            new_task_due_date = st.date_input("Due Date (optional):", value=None)
+            submitted_new_task = st.form_submit_button("➕ Add Task")
+
+            if submitted_new_task and new_task_description:
+                    st.session_state.study_tasks.append({
+                        "id": random.randint(10000, 99999),
+                        "description": new_task_description,
+                        "due_date": new_task_due_date,
+                        "completed": False,
+                        "editing": False # New flag for edit mode
+                    })
+                    st.success(f"Task '{new_task_description}' added!")
+            elif submitted_new_task and not new_task_description:
+                    st.warning("Task description cannot be empty.")
 
         if not st.session_state.study_tasks:
             st.info("No tasks yet. Add some!")
         else:
             st.markdown("---")
-            for task in st.session_state.study_tasks:
-                task_display = f"{task['description']}"
-                if task['due_date']:
-                    task_display += f" (Due: {task['due_date'].strftime('%Y-%m-%d')})"
+            for i, task in enumerate(st.session_state.study_tasks):
+                task_cols = st.columns([0.05, 0.6, 0.15, 0.1, 0.1]) # Checkbox, Description, Due Date, Edit, Delete
+                with task_cols[0]:
+                    is_completed = st.checkbox("", value=task['completed'], key=f"task_complete_{task['id']}")
+                    if is_completed != task['completed']:
+                        st.session_state.study_tasks[i]['completed'] = is_completed
+                        st.rerun()
                 
-                is_completed = st.checkbox(task_display, value=task['completed'], key=f"task_{task['id']}")
-                if is_completed != task['completed']:
-                    task['completed'] = is_completed
-                    st.rerun() # Rerun to reflect change immediately
+                with task_cols[1]:
+                    if task.get("editing", False):
+                        edited_description = st.text_input("Edit:", value=task['description'], key=f"edit_desc_{task['id']}")
+                        if st.button("Save", key=f"save_edit_{task['id']}"):
+                            st.session_state.study_tasks[i]['description'] = edited_description
+                            st.session_state.study_tasks[i]['editing'] = False
+                            st.rerun()
+                    else:
+                        task_display_style = "text-decoration: line-through; color: grey;" if task['completed'] else ""
+                        st.markdown(f"<span style='{task_display_style}'>{task['description']}</span>", unsafe_allow_html=True)
+                
+                with task_cols[2]:
+                    if task['due_date']:
+                        st.caption(task['due_date'].strftime('%Y-%m-%d'))
+                    else:
+                        st.caption("-")
+
+                with task_cols[3]:
+                    if not task.get("editing", False) and st.button("✏️", key=f"edit_btn_{task['id']}", help="Edit task"):
+                        st.session_state.study_tasks[i]['editing'] = True
+                        st.rerun()
+                
+                with task_cols[4]:
+                    if st.button("🗑️", key=f"delete_task_{task['id']}", help="Delete task"):
+                        st.session_state.study_tasks.pop(i)
+                        st.rerun()
 
     with study_hub_tabs[1]: # Citation Helper
-        st.subheader("Citation Generator (Stub)")
+        st.subheader("📜 Citation Generator")
         citation_text = st.text_area("Paste text or source details for citation:")
         citation_style = st.selectbox("Select Citation Style", ["APA", "MLA", "Chicago", "Harvard"])
         if st.button("📜 Generate Citation"):
             if citation_text:
-                st.info(f"Citation generation for '{citation_style}' style will be implemented here. Input: '{citation_text[:50]}...'")
+                with st.spinner("AI is crafting your citation..."):
+                    citation_prompt = templates["Citation Generation"].format(style=citation_style, source_details=citation_text)
+                    generated_citation = generate_ai_content(citation_prompt, st.session_state.api_key, model_name, 0.2, "Brief", {"tone": "Formal", "language_style": "Concise"})
+                    st.markdown("**Generated Citation:**")
+                    st.code(generated_citation, language="text")
             else:
                 st.warning("Please provide text/details for citation.")
 
