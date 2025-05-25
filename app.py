@@ -678,7 +678,7 @@ if st.session_state.get('interactive_quiz_active', False) and st.session_state.p
             st.rerun()
 
 # NEW: Main tabs for core functionality and new features
-main_tabs = st.tabs(["📝 Note Generation", "🔬 Research Assistant", "🎯 Study Hub", "✍️ Writing Enhancer", "🧠 Spaced Repetition", "📊 Analytics & History"])
+main_tabs = st.tabs(["📝 Note Generation", "🔬 Research Assistant", "🎯 Study Hub", "✍️ Writing Enhancer", "🧠 Spaced Repetition", "📊 Analytics & History", "🛠️ Misc. Features"])
 
 with main_tabs[0]: # Note Generation (existing main layout)
     col1_ng, col2_ng = st.columns([2, 1]) # Use different variable names to avoid conflict if any
@@ -1231,6 +1231,14 @@ with main_tabs[5]: # Analytics & History
     # For brevity, I'm omitting the direct copy-paste of that analytics block, but it should be placed here.
     st.caption("Advanced analytics will be displayed here.")
 
+with main_tabs[6]: # 🛠️ Misc. Features
+    st.header("🛠️ Additional & Miscellaneous Features")
+    st.markdown("This section will house a variety of extra tools and utilities. Use expanders below to access each feature.")
+    st.info("Placeholder: More features coming soon! Each will be in its own collapsible section.")
+
+    # Example of how you might add collapsible features later:
+    # with st.expander("Feature 1: Example Utility"):
+    #     st.write("Content for example utility feature.")
 # Footer
 st.markdown("---")
 st.markdown("Made with ❤️ using Streamlit and Gemini AI")
