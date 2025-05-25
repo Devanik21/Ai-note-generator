@@ -1,5 +1,7 @@
 import streamlit as st
 import google.generativeai as genai
+import smtplib # Add this import
+from email.mime.text import MIMEText # Add this import
 from datetime import datetime, timedelta
 import pandas as pd
 import json
@@ -506,6 +508,21 @@ def grade_quiz(quiz_text, user_answers):
     
     return percentage
 
+# Function to send email
+def send_email(to_address, subject, body, smtp_server, smtp_port, sender_email, sender_password):
+    try:
+        msg = MIMEText(body)
+        msg['Subject'] = subject
+        msg['From'] = sender_email
+        msg['To'] = to_address
+
+        with smtplib.SMTP_SSL(smtp_server, smtp_port) as server: # Use SMTP_SSL for Gmail, or SMTP for others
+            server.login(sender_email, sender_password)
+            server.sendmail(sender_email, to_address, msg.as_string())
+        return True
+    except Exception as e:
+        st.error(f"Error sending email: {e}")
+        return False
 # Main content area
 templates = load_prompt_templates()
 
@@ -666,8 +683,37 @@ if topic:
                 with st.expander("Email Notes"):
                     email_address = st.text_input("Email Address")
                     if st.button("Email Notes") and email_address:
-                        st.success(f"Notes would be emailed to {email_address} (Email functionality not implemented in this demo)")
+                        # --- MODIFICATION START ---
+                        # Retrieve SMTP settings (ideally from st.secrets or environment variables)
+                        # For demonstration, these are placeholders.
+                        # In a real app, use st.secrets["SMTP_SERVER"], st.secrets["SMTP_PORT"], etc.
+                        # Ensure these secrets are configured in your Streamlit deployment.
+                        
+                        # Example for Gmail:
+                        # SMTP_SERVER = "smtp.gmail.com"
+                        # SMTP_PORT = 465 
+                        # SENDER_EMAIL = "your_email@gmail.com" 
+                        # SENDER_PASSWORD = "your_app_password" # Use an App Password for Gmail if 2FA is enabled
 
+                        # You should get these from a secure source, e.g., Streamlit secrets
+                        # For local testing, you might use environment variables or hardcode temporarily
+                        # but NEVER commit credentials to version control.
+                        
+                        smtp_server = os.environ.get("SMTP_SERVER") # Or st.secrets["smtp_server"]
+                        smtp_port = int(os.environ.get("SMTP_PORT", 465)) # Or st.secrets["smtp_port"] (465 for SSL)
+                        sender_email = os.environ.get("SENDER_EMAIL") # Or st.secrets["sender_email"]
+                        sender_password = os.environ.get("SENDER_PASSWORD") # Or st.secrets["sender_password"]
+
+                        if not all([smtp_server, smtp_port, sender_email, sender_password]):
+                            st.error("Email server configuration is missing. Please set SMTP_SERVER, SMTP_PORT, SENDER_EMAIL, and SENDER_PASSWORD environment variables or Streamlit secrets.")
+                        else:
+                            email_subject = f"Notes on: {topic}"
+                            email_body = f"Here are your AI-generated notes on '{topic}':\n\n{export_content}"
+                            
+                            if send_email(email_address, email_subject, email_body, smtp_server, smtp_port, sender_email, sender_password):
+                                st.success(f"Notes successfully emailed to {email_address}!")
+                            # The send_email function will show an error if it fails
+                        # --- MODIFICATION END ---
 
 # Display history
 if st.session_state.history:
