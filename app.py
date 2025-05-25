@@ -845,54 +845,54 @@ if st.session_state.spaced_repetition:
                 st.markdown(f"<div class='flashcard-answer-content'>{card['answer']}</div>", unsafe_allow_html=True)
             st.markdown("</div>", unsafe_allow_html=True) # Close flashcard-container
                 
-            # Rate difficulty buttons (remain functionally the same)
-                col1, col2, col3, col4 = st.columns(4)
+            # Rate difficulty buttons
+            col1, col2, col3, col4 = st.columns(4)
                 
-                with col1:
-                    if st.button("😕 Hard"):
-                        # Update card using SuperMemo SM-2 algorithm
-                        if card['repetitions'] == 0:
-                            card['interval'] = 1
-                        else:
-                            card['ease_factor'] = max(1.3, card['ease_factor'] - 0.2)
-                            card['interval'] = max(1, card['interval'] * card['ease_factor'])
-                        
-                        card['repetitions'] = 0
-                        card['next_review'] = datetime.now() + timedelta(days=card['interval'])
-                        st.session_state.current_card_index += 1
-                        st.rerun()
-                
-                with col2:
-                    if st.button("🙂 Okay"):
-                        # Update card using SuperMemo SM-2 algorithm
-                        if card['repetitions'] == 0:
-                            card['interval'] = 1
-                        else:
-                            card['interval'] = card['interval'] * card['ease_factor']
-                        
-                        card['repetitions'] += 1
-                        card['next_review'] = datetime.now() + timedelta(days=card['interval'])
-                        st.session_state.current_card_index += 1
-                        st.rerun()
-                
-                with col3:
-                    if st.button("😀 Easy"):
-                        # Update card using SuperMemo SM-2 algorithm
-                        if card['repetitions'] == 0:
-                            card['interval'] = 2
-                        else:
-                            card['ease_factor'] = min(2.5, card['ease_factor'] + 0.1)
-                            card['interval'] = card['interval'] * card['ease_factor']
-                        
-                        card['repetitions'] += 1
-                        card['next_review'] = datetime.now() + timedelta(days=card['interval'])
-                        st.session_state.current_card_index += 1
-                        st.rerun()
-                
-                with col4:
-                    if st.button("Skip"):
-                        st.session_state.current_card_index += 1
-                        st.rerun()
+            with col1:
+                if st.button("😕 Hard"):
+                    # Update card using SuperMemo SM-2 algorithm
+                    if card['repetitions'] == 0:
+                        card['interval'] = 1
+                    else:
+                        card['ease_factor'] = max(1.3, card['ease_factor'] - 0.2)
+                        card['interval'] = max(1, card['interval'] * card['ease_factor'])
+                    
+                    card['repetitions'] = 0
+                    card['next_review'] = datetime.now() + timedelta(days=card['interval'])
+                    st.session_state.current_card_index += 1
+                    st.rerun()
+            
+            with col2:
+                if st.button("🙂 Okay"):
+                    # Update card using SuperMemo SM-2 algorithm
+                    if card['repetitions'] == 0:
+                        card['interval'] = 1
+                    else:
+                        card['interval'] = card['interval'] * card['ease_factor']
+                    
+                    card['repetitions'] += 1
+                    card['next_review'] = datetime.now() + timedelta(days=card['interval'])
+                    st.session_state.current_card_index += 1
+                    st.rerun()
+            
+            with col3:
+                if st.button("😀 Easy"):
+                    # Update card using SuperMemo SM-2 algorithm
+                    if card['repetitions'] == 0:
+                        card['interval'] = 2
+                    else:
+                        card['ease_factor'] = min(2.5, card['ease_factor'] + 0.1)
+                        card['interval'] = card['interval'] * card['ease_factor']
+                    
+                    card['repetitions'] += 1
+                    card['next_review'] = datetime.now() + timedelta(days=card['interval'])
+                    st.session_state.current_card_index += 1
+                    st.rerun()
+            
+            with col4:
+                if st.button("Skip"):
+                    st.session_state.current_card_index += 1
+                    st.rerun()
         else:
             st.success("No more cards due for review today!")
             st.session_state.current_card_index = 0
