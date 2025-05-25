@@ -344,7 +344,11 @@ Query:
 
         "Spaced Repetition Cards": "Based on the following notes, create 5-10 spaced repetition flashcards covering the most important concepts that would be suitable for long-term memorization. Each flashcard should have a 'Q:' for the question and an 'A:' for the answer. Separate each flashcard with three hyphens ('---'). Content: {content}",
         
-        "Quiz Generation": "Create a 5-question quiz with multiple-choice answers based on the following notes. Include 4 options per question with only one correct answer. Format with the question followed by options labeled A, B, C, D, and mark the correct answer at the end: {content}"
+        "Quiz Generation": "Create a 5-question quiz with multiple-choice answers based on the following notes. Include 4 options per question with only one correct answer. Format with the question followed by options labeled A, B, C, D, and mark the correct answer at the end: {content}",
+
+        "Research Assistant Query": "Provide a detailed and well-structured answer to the following research query: '{query}'. Draw upon general knowledge and provide explanations, examples, and context where appropriate. Aim for a comprehensive yet understandable response.",
+        "Writing Enhancer - Rephrase": "Rephrase the following text to improve its clarity, conciseness, and flow, while retaining the original meaning. Original text: '{text_to_rephrase}'",
+        "Writing Enhancer - Expand": "Expand on the following point or idea, providing more detail, examples, or supporting arguments. Point to expand: '{text_to_expand}'"
     })
     
     return templates
@@ -671,7 +675,7 @@ if st.session_state.get('interactive_quiz_active', False) and st.session_state.p
             st.rerun()
 
 # NEW: Main tabs for core functionality and new features
-main_tabs = st.tabs(["📝 Note Generation", "🎯 Study Hub", "🧠 Spaced Repetition", "📊 Analytics & History"])
+main_tabs = st.tabs(["📝 Note Generation", "🔬 Research Assistant", "🎯 Study Hub", "✍️ Writing Enhancer", "🧠 Spaced Repetition", "📊 Analytics & History"])
 
 with main_tabs[0]: # Note Generation (existing main layout)
     col1_ng, col2_ng = st.columns([2, 1]) # Use different variable names to avoid conflict if any
@@ -833,7 +837,45 @@ with main_tabs[0]: # Note Generation (existing main layout)
             stat_col1.metric(label="Word Count", value=word_count)
             stat_col2.metric(label="Character Count", value=char_count)
 
-with main_tabs[1]: # Study Hub
+with main_tabs[1]: # 🔬 Research Assistant
+    st.header("🔬 Research Assistant")
+    st.markdown("Pose specific questions or sub-topics for a deeper dive. The AI will provide a focused response.")
+
+    research_query = st.text_area("Enter your research query or sub-topic:", height=100, key="research_query_input")
+    
+    if st.button("🔍 Conduct Research", key="conduct_research_btn"):
+        if not st.session_state.api_key:
+            st.error("Please enter your Gemini API key in the sidebar.")
+        elif not research_query:
+            st.warning("Please enter a research query.")
+        else:
+            with st.spinner("AI is conducting in-depth research..."):
+                # Use a specific prompt for research assistance
+                research_prompt = templates["Research Assistant Query"].format(query=research_query)
+                
+                # You might want to use different parameters for research, e.g., more comprehensive
+                research_output = generate_ai_content(
+                    research_prompt,
+                    st.session_state.api_key,
+                    model_name, # Use the globally selected model
+                    temperature=0.5, # Slightly more creative/exploratory for research
+                    detail_level="Comprehensive", # Aim for more detail
+                    style_params={"tone": "Academic", "language_style": "Elaborate"} # Suitable for research
+                )
+            
+            st.session_state.research_assistant_output = research_output # Store the output
+            st.success("Research complete!")
+
+    if 'research_assistant_output' in st.session_state and st.session_state.research_assistant_output:
+        st.markdown("---")
+        st.subheader("💡 Research Findings")
+        st.markdown(st.session_state.research_assistant_output)
+        # Option to save or export these findings could be added here
+        if st.button("Clear Research Findings", key="clear_research_btn"):
+            st.session_state.research_assistant_output = ""
+            st.rerun()
+
+with main_tabs[2]: # Study Hub
     st.header("🎯 Study Hub")
     study_hub_tabs = st.tabs(["📚 Planner", "✍️ Citation Helper"])
 
@@ -910,8 +952,54 @@ with main_tabs[1]: # Study Hub
             else:
                 st.warning("Please provide text/details for citation.")
 
+with main_tabs[3]: # ✍️ Writing Enhancer
+    st.header("✍️ Writing Enhancer")
+    st.markdown("Improve your writing with AI assistance. Paste your text and choose an enhancement.")
+
+    text_to_enhance = st.text_area("Paste your text here:", height=200, key="writing_enhancer_input")
+    
+    enhancement_type = st.selectbox(
+        "Choose Enhancement Type:",
+        ["Select an option...", "Rephrase for Clarity", "Expand on Idea"],
+        key="enhancement_type_select"
+    )
+
+    if st.button("✨ Enhance Text", key="enhance_text_btn"):
+        if not st.session_state.api_key:
+            st.error("Please enter your Gemini API key in the sidebar.")
+        elif not text_to_enhance:
+            st.warning("Please paste some text to enhance.")
+        elif enhancement_type == "Select an option...":
+            st.warning("Please select an enhancement type.")
+        else:
+            with st.spinner("AI is refining your text..."):
+                if enhancement_type == "Rephrase for Clarity":
+                    prompt_template_key = "Writing Enhancer - Rephrase"
+                    prompt_format_args = {"text_to_rephrase": text_to_enhance}
+                elif enhancement_type == "Expand on Idea":
+                    prompt_template_key = "Writing Enhancer - Expand"
+                    prompt_format_args = {"text_to_expand": text_to_enhance}
+                
+                enhancer_prompt = templates[prompt_template_key].format(**prompt_format_args)
+                
+                enhanced_output = generate_ai_content(
+                    enhancer_prompt,
+                    st.session_state.api_key,
+                    model_name,
+                    temperature=0.6, # Balanced creativity
+                    detail_level="Standard", 
+                    style_params={"tone": "Formal", "language_style": "Standard"} # General purpose
+                )
+            st.session_state.writing_enhancer_output = enhanced_output
+            st.success("Text enhancement complete!")
+
+    if 'writing_enhancer_output' in st.session_state and st.session_state.writing_enhancer_output:
+        st.markdown("---")
+        st.subheader("✒️ Enhanced Text")
+        st.markdown(st.session_state.writing_enhancer_output)
+
 # NEW: Display due flashcards for spaced repetition
-with main_tabs[2]: # Spaced Repetition
+with main_tabs[4]: # Spaced Repetition
     st.header("🧠 Spaced Repetition Flashcards")
     due_cards = [card for card in st.session_state.spaced_repetition 
                 if card['next_review'] <= datetime.now()]
@@ -1039,7 +1127,7 @@ with main_tabs[2]: # Spaced Repetition
     else:
         st.info("You haven't created any flashcards yet.")
 
-with main_tabs[3]: # Analytics & History
+with main_tabs[5]: # Analytics & History
     st.header("📊 Analytics & Recent Activity")
     
     st.subheader("📜 Recent Notes")
