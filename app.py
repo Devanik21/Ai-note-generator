@@ -1016,6 +1016,29 @@ with main_tabs[2]: # Spaced Repetition
     else:
         st.info("No flashcards created yet to show statistics.")
 
+    st.markdown("---")
+    st.subheader("📚 All My Flashcards")
+    if st.session_state.spaced_repetition:
+        # Search/filter option (optional enhancement)
+        search_term = st.text_input("Search all flashcards (by question or topic):", key="search_all_flashcards")
+        
+        filtered_cards_all = [
+            card for card in st.session_state.spaced_repetition
+            if not search_term or search_term.lower() in card['question'].lower() or search_term.lower() in card['topic'].lower()
+        ]
+
+        if not filtered_cards_all:
+            st.caption("No flashcards match your search term.")
+        else:
+            st.caption(f"Showing {len(filtered_cards_all)} of {len(st.session_state.spaced_repetition)} total flashcards.")
+            for idx, card_item in enumerate(filtered_cards_all):
+                with st.expander(f"**{card_item['topic']}**: {card_item['question'][:60]}... (Next review: {card_item['next_review'].strftime('%Y-%m-%d')})"):
+                    st.markdown(f"**Q:** {card_item['question']}")
+                    st.markdown(f"**A:** {card_item['answer']}")
+                    st.caption(f"Created: {card_item['created'].strftime('%Y-%m-%d')}, Interval: {card_item['interval']} days, Ease: {card_item['ease_factor']:.2f}, Reps: {card_item['repetitions']}")
+    else:
+        st.info("You haven't created any flashcards yet.")
+
 with main_tabs[3]: # Analytics & History
     st.header("📊 Analytics & Recent Activity")
     
