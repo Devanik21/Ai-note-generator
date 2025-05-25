@@ -353,6 +353,12 @@ Query:
         "Writing Enhancer - Summarize": "Provide a concise summary of the following text, capturing the main points. Text to summarize: '{text_to_summarize}'",
         "Writing Enhancer - Clarity Check": "Review the following text for clarity and conciseness. Identify areas that could be improved and suggest specific revisions. Text for review: '{text_for_review}'"
     })
+    # Templates for Misc. Features
+    templates["Quick Fact Finder"] = "Provide a concise definition or key fact for the term: '{term}'."
+    templates["Synonym Antonym Finder"] = "For the word '{word}', provide a list of 3-5 synonyms and 3-5 antonyms."
+    templates["Simple Translator"] = "Translate the following text to {target_language}. Text: '{text_to_translate}'"
+    templates["Idea Generator"] = "Generate 3-5 creative ideas related to the theme or problem: '{theme_or_problem}'."
+    templates["Code Explainer"] = "Explain the following code snippet in simple terms, outlining its main purpose and functionality. Code: \n```\n{code_snippet}\n```"
     
     return templates
 
@@ -1234,11 +1240,79 @@ with main_tabs[5]: # Analytics & History
 with main_tabs[6]: # 🛠️ Misc. Features
     st.header("🛠️ Additional & Miscellaneous Features")
     st.markdown("This section will house a variety of extra tools and utilities. Use expanders below to access each feature.")
-    st.info("Placeholder: More features coming soon! Each will be in its own collapsible section.")
+    
+    # --- 1. Quick Fact Finder ---
+    with st.expander("🔍 Quick Fact Finder"):
+        fact_term = st.text_input("Enter a term to find a quick fact/definition:", key="fact_finder_term")
+        if st.button("Find Fact", key="fact_finder_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not fact_term: st.warning("Please enter a term.")
+            else:
+                with st.spinner("Searching for facts..."):
+                    prompt = templates["Quick Fact Finder"].format(term=fact_term)
+                    fact_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.3, "Brief", {"tone": "Informative", "language_style": "Concise"})
+                    st.markdown(fact_output)
 
-    # Example of how you might add collapsible features later:
-    # with st.expander("Feature 1: Example Utility"):
-    #     st.write("Content for example utility feature.")
+    # --- 2. Synonym/Antonym Finder ---
+    with st.expander("🔄 Synonym & Antonym Finder"):
+        syn_ant_word = st.text_input("Enter a word:", key="syn_ant_word")
+        if st.button("Find Synonyms/Antonyms", key="syn_ant_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not syn_ant_word: st.warning("Please enter a word.")
+            else:
+                with st.spinner("Finding words..."):
+                    prompt = templates["Synonym Antonym Finder"].format(word=syn_ant_word)
+                    syn_ant_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.5, "Brief", {"tone": "Neutral", "language_style": "Standard"})
+                    st.markdown(syn_ant_output)
+
+    # --- 3. Simple Translator ---
+    with st.expander("🌐 Simple Translator"):
+        text_to_translate = st.text_area("Text to translate:", height=100, key="translator_input")
+        # Common languages for simplicity, can be expanded
+        target_languages = ["Spanish", "French", "German", "Japanese", "Chinese (Simplified)", "Hindi", "Arabic", "Portuguese", "Russian", "Korean"]
+        selected_language = st.selectbox("Translate to:", target_languages, key="translator_language_select")
+        
+        if st.button("Translate", key="translator_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not text_to_translate: st.warning("Please enter text to translate.")
+            elif not selected_language: st.warning("Please select a target language.")
+            else:
+                with st.spinner(f"Translating to {selected_language}..."):
+                    prompt = templates["Simple Translator"].format(text_to_translate=text_to_translate, target_language=selected_language)
+                    translation_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.4, "Standard", {"tone": "Neutral", "language_style": "Standard"})
+                    st.markdown(f"**Translation ({selected_language}):**")
+                    st.markdown(translation_output)
+
+    # --- 4. Idea Generator ---
+    with st.expander("💡 Idea Generator"):
+        idea_theme = st.text_input("Enter a theme or problem for idea generation:", key="idea_theme_input")
+        if st.button("Generate Ideas", key="idea_gen_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not idea_theme: st.warning("Please enter a theme or problem.")
+            else:
+                with st.spinner("Brainstorming ideas..."):
+                    prompt = templates["Idea Generator"].format(theme_or_problem=idea_theme)
+                    ideas_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.8, "Brief", {"tone": "Creative", "language_style": "Concise"})
+                    st.markdown("**Generated Ideas:**")
+                    st.markdown(ideas_output)
+
+    # --- 5. Code Explainer (Simple) ---
+    with st.expander("💻 Code Explainer (Simple)"):
+        code_snippet_input = st.text_area("Paste a small code snippet here:", height=150, key="code_explainer_input", placeholder="e.g., Python, JavaScript, SQL (keep it short)")
+        if st.button("Explain Code", key="code_explainer_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not code_snippet_input: st.warning("Please paste a code snippet.")
+            else:
+                with st.spinner("AI is analyzing the code..."):
+                    prompt = templates["Code Explainer"].format(code_snippet=code_snippet_input)
+                    explanation_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.3, "Standard", {"tone": "Informative", "language_style": "Simple"})
+                    st.markdown("**Code Explanation:**")
+                    st.markdown(explanation_output)
+
+    # --- Placeholder for more tools ---
+    st.markdown("---")
+    st.caption("More tools will be added here!")
+
 # Footer
 st.markdown("---")
 st.markdown("Made with ❤️ using Streamlit and Gemini AI")
