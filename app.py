@@ -346,9 +346,12 @@ Query:
         
         "Quiz Generation": "Create a 5-question quiz with multiple-choice answers based on the following notes. Include 4 options per question with only one correct answer. Format with the question followed by options labeled A, B, C, D, and mark the correct answer at the end: {content}",
 
-        "Research Assistant Query": "Provide a detailed and well-structured answer to the following research query: '{query}'. Draw upon general knowledge and provide explanations, examples, and context where appropriate. Aim for a comprehensive yet understandable response.",
-        "Writing Enhancer - Rephrase": "Rephrase the following text to improve its clarity, conciseness, and flow, while retaining the original meaning. Original text: '{text_to_rephrase}'",
-        "Writing Enhancer - Expand": "Expand on the following point or idea, providing more detail, examples, or supporting arguments. Point to expand: '{text_to_expand}'"
+        "Research Assistant Query": "Provide a detailed and well-structured answer to the following research query: '{query}'. Structure the output as {output_format}. Draw upon general knowledge and provide explanations, examples, and context where appropriate. Aim for a comprehensive yet understandable response.",
+        "Research Follow-up Questions": "Based on the following research findings, suggest 3-5 insightful follow-up questions that a student might want to explore next: {research_findings}",
+        "Writing Enhancer - Rephrase": "Rephrase the following text to improve its clarity, conciseness, and flow, while retaining the original meaning. If a target tone is specified as '{target_tone}', adapt the rephrased text to that tone. Original text: '{text_to_rephrase}'",
+        "Writing Enhancer - Expand": "Expand on the following point or idea, providing more detail, examples, or supporting arguments. Point to expand: '{text_to_expand}'",
+        "Writing Enhancer - Summarize": "Provide a concise summary of the following text, capturing the main points. Text to summarize: '{text_to_summarize}'",
+        "Writing Enhancer - Clarity Check": "Review the following text for clarity and conciseness. Identify areas that could be improved and suggest specific revisions. Text for review: '{text_for_review}'"
     })
     
     return templates
@@ -842,16 +845,23 @@ with main_tabs[1]: # 🔬 Research Assistant
     st.markdown("Pose specific questions or sub-topics for a deeper dive. The AI will provide a focused response.")
 
     research_query = st.text_area("Enter your research query or sub-topic:", height=100, key="research_query_input")
+    output_format_options = ["Detailed Report", "Bulleted Key Points", "Q&A Format", "Pros and Cons List"]
+    research_output_format = st.selectbox("Desired Output Format:", output_format_options, key="research_output_format_select")
     
     if st.button("🔍 Conduct Research", key="conduct_research_btn"):
         if not st.session_state.api_key:
             st.error("Please enter your Gemini API key in the sidebar.")
         elif not research_query:
             st.warning("Please enter a research query.")
+        elif not research_output_format:
+            st.warning("Please select an output format.")
         else:
             with st.spinner("AI is conducting in-depth research..."):
                 # Use a specific prompt for research assistance
-                research_prompt = templates["Research Assistant Query"].format(query=research_query)
+                research_prompt = templates["Research Assistant Query"].format(
+                    query=research_query, 
+                    output_format=research_output_format
+                )
                 
                 # You might want to use different parameters for research, e.g., more comprehensive
                 research_output = generate_ai_content(
@@ -864,16 +874,42 @@ with main_tabs[1]: # 🔬 Research Assistant
                 )
             
             st.session_state.research_assistant_output = research_output # Store the output
+            st.session_state.current_research_query = research_query # Save for potential history saving
             st.success("Research complete!")
 
     if 'research_assistant_output' in st.session_state and st.session_state.research_assistant_output:
         st.markdown("---")
         st.subheader("💡 Research Findings")
         st.markdown(st.session_state.research_assistant_output)
-        # Option to save or export these findings could be added here
-        if st.button("Clear Research Findings", key="clear_research_btn"):
-            st.session_state.research_assistant_output = ""
-            st.rerun()
+        
+        res_col1, res_col2, res_col3 = st.columns(3)
+        with res_col1:
+            if st.button("💾 Save Research to History", key="save_research_hist_btn"):
+                if 'current_research_query' in st.session_state and st.session_state.current_research_query:
+                    save_to_history(
+                        tool_name="Research Assistant", 
+                        topic=st.session_state.current_research_query, 
+                        output=st.session_state.research_assistant_output
+                    )
+                    st.success(f"Research on '{st.session_state.current_research_query}' saved to history!")
+                else:
+                    st.warning("No current research query to associate with this save.")
+        with res_col2:
+            if st.button("❓ Suggest Follow-up Questions", key="suggest_follow_up_btn"):
+                with st.spinner("AI is thinking of next steps..."):
+                    follow_up_prompt = templates["Research Follow-up Questions"].format(research_findings=st.session_state.research_assistant_output)
+                    follow_up_questions = generate_ai_content(follow_up_prompt, st.session_state.api_key, model_name, 0.7, "Brief", {"tone": "Inquisitive", "language_style": "Concise"})
+                    st.session_state.follow_up_questions_output = follow_up_questions
+        with res_col3:
+            if st.button("Clear Research Findings", key="clear_research_btn"):
+                st.session_state.research_assistant_output = ""
+                st.session_state.follow_up_questions_output = "" # Clear follow-ups too
+                st.rerun()
+
+    if 'follow_up_questions_output' in st.session_state and st.session_state.follow_up_questions_output:
+        st.markdown("---")
+        st.subheader("🤔 Potential Follow-up Questions:")
+        st.markdown(st.session_state.follow_up_questions_output)
 
 with main_tabs[2]: # Study Hub
     st.header("🎯 Study Hub")
@@ -960,9 +996,15 @@ with main_tabs[3]: # ✍️ Writing Enhancer
     
     enhancement_type = st.selectbox(
         "Choose Enhancement Type:",
-        ["Select an option...", "Rephrase for Clarity", "Expand on Idea"],
+        ["Select an option...", "Rephrase Text", "Expand on Idea", "Summarize Text", "Check Clarity & Conciseness"],
         key="enhancement_type_select"
     )
+
+    target_tone_enhancer = "N/A" # Default if not applicable
+    if enhancement_type == "Rephrase Text":
+        # Using a subset of TONE_OPTIONS or a new list specific for rephrasing
+        rephrase_tone_options = ["Default (Original)", "More Formal", "More Casual", "More Persuasive", "More Empathetic", "Simpler"]
+        target_tone_enhancer = st.selectbox("Target Tone for Rephrasing:", rephrase_tone_options, key="rephrase_tone_select")
 
     if st.button("✨ Enhance Text", key="enhance_text_btn"):
         if not st.session_state.api_key:
@@ -973,14 +1015,23 @@ with main_tabs[3]: # ✍️ Writing Enhancer
             st.warning("Please select an enhancement type.")
         else:
             with st.spinner("AI is refining your text..."):
-                if enhancement_type == "Rephrase for Clarity":
+                prompt_format_args = {}
+                if enhancement_type == "Rephrase Text":
                     prompt_template_key = "Writing Enhancer - Rephrase"
-                    prompt_format_args = {"text_to_rephrase": text_to_enhance}
+                    prompt_format_args = {"text_to_rephrase": text_to_enhance, "target_tone": target_tone_enhancer if target_tone_enhancer != "Default (Original)" else "the original tone"}
                 elif enhancement_type == "Expand on Idea":
                     prompt_template_key = "Writing Enhancer - Expand"
                     prompt_format_args = {"text_to_expand": text_to_enhance}
+                elif enhancement_type == "Summarize Text":
+                    prompt_template_key = "Writing Enhancer - Summarize"
+                    prompt_format_args = {"text_to_summarize": text_to_enhance}
+                elif enhancement_type == "Check Clarity & Conciseness":
+                    prompt_template_key = "Writing Enhancer - Clarity Check"
+                    prompt_format_args = {"text_for_review": text_to_enhance}
                 
-                enhancer_prompt = templates[prompt_template_key].format(**prompt_format_args)
+                enhancer_prompt = "Invalid enhancement type selected." # Default
+                if 'prompt_template_key' in locals(): # Check if a valid type was selected
+                    enhancer_prompt = templates[prompt_template_key].format(**prompt_format_args)
                 
                 enhanced_output = generate_ai_content(
                     enhancer_prompt,
