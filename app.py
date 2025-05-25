@@ -361,7 +361,29 @@ Query:
     templates["Simple Translator"] = "Translate the following text to {target_language}. Text: '{text_to_translate}'"
     templates["Idea Generator"] = "Generate 3-5 creative ideas related to the theme or problem: '{theme_or_problem}'."
     templates["Code Explainer"] = "Explain the following code snippet in simple terms, outlining its main purpose and functionality. Code: \n```\n{code_snippet}\n```"
-    
+
+    # Templates for 20 New Misc. Features
+    templates["Email Subject Generator"] = "Generate 5 creative and effective email subject lines for an email with the following core message or topic: '{email_topic}'."
+    templates["Headline Analyzer"] = "Analyze the following headline and provide feedback on its effectiveness (clarity, engagement, SEO potential if applicable). Suggest 3 alternative headlines. Headline: '{headline_text}'."
+    templates["Secure Password Idea Generator"] = "Suggest 3 ideas for creating a secure password based on the following criteria (do not generate the password itself, just the method or pattern): Length at least {length} characters, must include {char_types_count} types of characters (uppercase, lowercase, numbers, symbols)."
+    templates["Meeting Agenda Creator"] = "Create a basic meeting agenda for a meeting about '{meeting_topic}'. Include sections for: Attendees (list: {attendees}), Objectives, Discussion Points (3-5), Action Items, and Next Steps."
+    templates["Pros and Cons Lister"] = "List the potential pros and cons for the following topic or decision: '{decision_topic}'."
+    templates["ELI5 Explainer"] = "Explain the following complex topic as if you were explaining it to a 5-year-old: '{complex_topic}'."
+    templates["Text Mood Analyzer"] = "Analyze the overall mood or tone of the following text. Identify the dominant emotion(s) conveyed. Text: '{text_for_mood_analysis}'."
+    templates["Keyword Extractor"] = "Extract the 5-7 most important keywords or key phrases from the following text: '{text_for_keywords}'."
+    templates["Hashtag Generator"] = "Generate 5-7 relevant and trending hashtags for a social media post about: '{post_topic_or_text}'."
+    templates["Story Idea Kicker"] = "Provide 3 unique story prompts or starting ideas based on the following genre or theme: '{story_genre_theme}'."
+    templates["Historical Event Summarizer"] = "Provide a brief (3-5 sentences) summary of the historical event: '{event_name}'."
+    templates["Book Plot Summarizer"] = "Provide a concise plot summary (avoiding major spoilers if possible) for the book titled: '{book_title}'. If you don't know it, say so."
+    templates["Recipe Idea Generator"] = "Suggest a recipe idea using the following main ingredients: '{ingredients_list}'. Briefly outline the cooking steps."
+    templates["Learning Path Suggester"] = "Suggest a high-level learning path (3-5 key stages or topics) for someone wanting to learn about: '{skill_or_topic_to_learn}'."
+    templates["Debate Topic Generator"] = "Generate 3 interesting and debatable topics suitable for a student debate."
+    templates["Short Poem Generator"] = "Write a short, 4-8 line poem about: '{poem_theme_keywords}'."
+    templates["Joke Teller"] = "Tell me a family-friendly joke. If you know one about {joke_topic}, tell that, otherwise a general one."
+    templates["Character Name Generator"] = "Suggest 5 unique character names suitable for a story in the {character_genre_theme} genre/setting."
+    templates["Random Quote Generator"] = "Provide an inspirational or thought-provoking quote. If possible, relate it to the theme of '{quote_theme}'."
+    templates["Fictional World Idea Generator"] = "Generate a core concept or unique feature for a fictional world in the {world_genre} genre."
+
     return templates
 
 # Function to generate content with AI
@@ -1321,6 +1343,255 @@ if st.session_state.selected_main_tab == "🛠️ Misc. Features":
                     explanation_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.3, "Standard", {"tone": "Informative", "language_style": "Simple"})
                     st.markdown("**Code Explanation:**")
                     st.markdown(explanation_output)
+
+    # --- 6. Email Subject Line Generator ---
+    with st.expander("📧 Email Subject Generator"):
+        email_topic_input = st.text_input("Enter the core topic or message of your email:", key="email_subject_topic")
+        if st.button("Generate Subjects", key="email_subject_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not email_topic_input: st.warning("Please enter an email topic.")
+            else:
+                with st.spinner("Crafting subject lines..."):
+                    prompt = templates["Email Subject Generator"].format(email_topic=email_topic_input)
+                    subjects_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.7, "Brief", {"tone": "Persuasive", "language_style": "Concise"})
+                    st.markdown("**Suggested Subject Lines:**")
+                    st.markdown(subjects_output)
+
+    # --- 7. Headline Analyzer/Generator ---
+    with st.expander("📰 Headline Analyzer/Generator"):
+        headline_text_input = st.text_input("Enter headline to analyze or topic for generation:", key="headline_analyzer_text")
+        if st.button("Analyze/Generate Headlines", key="headline_analyzer_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not headline_text_input: st.warning("Please enter text.")
+            else:
+                with st.spinner("Analyzing headlines..."):
+                    prompt = templates["Headline Analyzer"].format(headline_text=headline_text_input)
+                    headline_analysis_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.6, "Standard", {"tone": "Critical", "language_style": "Standard"})
+                    st.markdown("**Headline Analysis & Suggestions:**")
+                    st.markdown(headline_analysis_output)
+
+    # --- 8. Secure Password Idea Generator ---
+    with st.expander("🔑 Secure Password Idea Generator (Conceptual)"):
+        pw_length = st.number_input("Minimum password length:", min_value=8, max_value=32, value=12, key="pw_idea_length")
+        pw_char_types = st.number_input("Number of character types (e.g., uppercase, lowercase, number, symbol):", min_value=2, max_value=4, value=3, key="pw_idea_char_types")
+        st.caption("⚠️ This tool provides *ideas* for password creation methods, not actual passwords. Always use unique, strong passwords.")
+        if st.button("Generate Password Ideas", key="pw_idea_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            else:
+                with st.spinner("Generating password concepts..."):
+                    prompt = templates["Secure Password Idea Generator"].format(length=pw_length, char_types_count=pw_char_types)
+                    pw_ideas_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.7, "Brief", {"tone": "Informative", "language_style": "Concise"})
+                    st.markdown("**Password Creation Ideas:**")
+                    st.markdown(pw_ideas_output)
+
+    # --- 9. Meeting Agenda Creator ---
+    with st.expander("🗓️ Meeting Agenda Creator"):
+        meeting_topic_agenda = st.text_input("Meeting Topic:", key="agenda_topic")
+        meeting_attendees_agenda = st.text_input("Attendees (comma-separated):", key="agenda_attendees")
+        if st.button("Create Agenda", key="agenda_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not meeting_topic_agenda: st.warning("Please enter a meeting topic.")
+            else:
+                with st.spinner("Drafting agenda..."):
+                    prompt = templates["Meeting Agenda Creator"].format(meeting_topic=meeting_topic_agenda, attendees=meeting_attendees_agenda)
+                    agenda_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.5, "Standard", {"tone": "Formal", "language_style": "Structured"})
+                    st.markdown("**Generated Meeting Agenda:**")
+                    st.markdown(agenda_output)
+
+    # --- 10. Pros and Cons Lister ---
+    with st.expander("⚖️ Pros and Cons Lister"):
+        pro_con_topic = st.text_input("Topic or Decision for Pros & Cons:", key="pro_con_topic")
+        if st.button("List Pros & Cons", key="pro_con_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not pro_con_topic: st.warning("Please enter a topic.")
+            else:
+                with st.spinner("Weighing options..."):
+                    prompt = templates["Pros and Cons Lister"].format(decision_topic=pro_con_topic)
+                    pro_con_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.6, "Standard", {"tone": "Neutral", "language_style": "Balanced"})
+                    st.markdown(pro_con_output)
+
+    # --- 11. ELI5 (Explain Like I'm 5) ---
+    with st.expander("👶 ELI5 Explainer"):
+        eli5_topic = st.text_input("Complex topic to explain simply:", key="eli5_topic")
+        if st.button("Explain Simply (ELI5)", key="eli5_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not eli5_topic: st.warning("Please enter a topic.")
+            else:
+                with st.spinner("Simplifying..."):
+                    prompt = templates["ELI5 Explainer"].format(complex_topic=eli5_topic)
+                    eli5_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.5, "Standard", {"tone": "Simple", "language_style": "Conversational"})
+                    st.markdown(eli5_output)
+
+    # --- 12. Text Mood Analyzer ---
+    with st.expander("😊 Text Mood Analyzer"):
+        mood_text = st.text_area("Text to analyze for mood:", height=100, key="mood_text_input")
+        if st.button("Analyze Mood", key="mood_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not mood_text: st.warning("Please enter text.")
+            else:
+                with st.spinner("Sensing the vibe..."):
+                    prompt = templates["Text Mood Analyzer"].format(text_for_mood_analysis=mood_text)
+                    mood_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.4, "Brief", {"tone": "Analytical", "language_style": "Concise"})
+                    st.markdown(mood_output)
+
+    # --- 13. Keyword Extractor ---
+    with st.expander("🔑 Keyword Extractor"):
+        keyword_text = st.text_area("Text to extract keywords from:", height=150, key="keyword_text_input")
+        if st.button("Extract Keywords", key="keyword_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not keyword_text: st.warning("Please enter text.")
+            else:
+                with st.spinner("Identifying key terms..."):
+                    prompt = templates["Keyword Extractor"].format(text_for_keywords=keyword_text)
+                    keywords_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.3, "Brief", {"tone": "Analytical", "language_style": "List"})
+                    st.markdown("**Extracted Keywords:**")
+                    st.markdown(keywords_output)
+
+    # --- 14. Hashtag Generator ---
+    with st.expander("#️⃣ Hashtag Generator"):
+        hashtag_topic = st.text_input("Topic or text for hashtag generation:", key="hashtag_topic_input")
+        if st.button("Generate Hashtags", key="hashtag_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not hashtag_topic: st.warning("Please enter a topic.")
+            else:
+                with st.spinner("Finding relevant hashtags..."):
+                    prompt = templates["Hashtag Generator"].format(post_topic_or_text=hashtag_topic)
+                    hashtags_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.7, "Brief", {"tone": "Trendy", "language_style": "Concise"})
+                    st.markdown("**Suggested Hashtags:**")
+                    st.markdown(hashtags_output)
+
+    # --- 15. Story Idea Kicker ---
+    with st.expander("📖 Story Idea Kicker"):
+        story_genre = st.text_input("Genre or theme for story ideas (e.g., Sci-Fi, Fantasy, Mystery):", key="story_genre_input")
+        if st.button("Kickstart Story Ideas", key="story_idea_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not story_genre: st.warning("Please enter a genre or theme.")
+            else:
+                with st.spinner("Brewing up narratives..."):
+                    prompt = templates["Story Idea Kicker"].format(story_genre_theme=story_genre)
+                    story_ideas_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.8, "Standard", {"tone": "Creative", "language_style": "Descriptive"})
+                    st.markdown("**Story Prompts/Ideas:**")
+                    st.markdown(story_ideas_output)
+
+    # --- 16. Historical Event Summarizer ---
+    with st.expander("🏛️ Historical Event Summarizer"):
+        event_name_input = st.text_input("Name of the historical event:", key="hist_event_input")
+        if st.button("Summarize Event", key="hist_event_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not event_name_input: st.warning("Please enter an event name.")
+            else:
+                with st.spinner("Consulting the annals of history..."):
+                    prompt = templates["Historical Event Summarizer"].format(event_name=event_name_input)
+                    event_summary_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.4, "Brief", {"tone": "Informative", "language_style": "Concise"})
+                    st.markdown(event_summary_output)
+
+    # --- 17. Book Plot Summarizer ---
+    with st.expander("📚 Book Plot Summarizer"):
+        book_title_input = st.text_input("Title of the book:", key="book_plot_input")
+        if st.button("Summarize Plot", key="book_plot_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not book_title_input: st.warning("Please enter a book title.")
+            else:
+                with st.spinner("Flipping through pages..."):
+                    prompt = templates["Book Plot Summarizer"].format(book_title=book_title_input)
+                    book_summary_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.6, "Standard", {"tone": "Narrative", "language_style": "Engaging"})
+                    st.markdown(book_summary_output)
+
+    # --- 18. Recipe Idea Generator ---
+    with st.expander("🍳 Recipe Idea Generator"):
+        ingredients_input = st.text_input("Main ingredients you have (comma-separated):", key="recipe_ingredients_input")
+        if st.button("Suggest Recipe", key="recipe_idea_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not ingredients_input: st.warning("Please list some ingredients.")
+            else:
+                with st.spinner("Cooking up ideas..."):
+                    prompt = templates["Recipe Idea Generator"].format(ingredients_list=ingredients_input)
+                    recipe_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.7, "Standard", {"tone": "Helpful", "language_style": "Instructional"})
+                    st.markdown(recipe_output)
+
+    # --- 19. Learning Path Suggester ---
+    with st.expander("🛤️ Learning Path Suggester"):
+        learn_topic_input = st.text_input("Skill or topic you want to learn:", key="learn_path_topic")
+        if st.button("Suggest Learning Path", key="learn_path_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not learn_topic_input: st.warning("Please enter a skill or topic.")
+            else:
+                with st.spinner("Charting your course..."):
+                    prompt = templates["Learning Path Suggester"].format(skill_or_topic_to_learn=learn_topic_input)
+                    path_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.5, "Standard", {"tone": "Guidance", "language_style": "Structured"})
+                    st.markdown("**Suggested Learning Path:**")
+                    st.markdown(path_output)
+
+    # --- 20. Debate Topic Generator ---
+    with st.expander("🗣️ Debate Topic Generator"):
+        if st.button("Generate Debate Topics", key="debate_topic_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            else:
+                with st.spinner("Finding controversial ideas..."):
+                    prompt = templates["Debate Topic Generator"] # No specific input needed from user for this one
+                    debate_topics_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.8, "Brief", {"tone": "Provocative", "language_style": "Concise"})
+                    st.markdown("**Debate Topics:**")
+                    st.markdown(debate_topics_output)
+
+    # --- 21. Short Poem Generator ---
+    with st.expander("✒️ Short Poem Generator"):
+        poem_theme_input = st.text_input("Theme or keywords for the poem:", key="poem_theme_input")
+        if st.button("Write Poem", key="poem_gen_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not poem_theme_input: st.warning("Please provide a theme.")
+            else:
+                with st.spinner("Summoning the muse..."):
+                    prompt = templates["Short Poem Generator"].format(poem_theme_keywords=poem_theme_input)
+                    poem_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.9, "Brief", {"tone": "Artistic", "language_style": "Poetic"})
+                    st.markdown(poem_output)
+
+    # --- 22. Joke Teller ---
+    with st.expander("😂 Joke Teller"):
+        joke_topic_input = st.text_input("Optional: Tell me a joke about...", key="joke_topic_input", placeholder="e.g., animals, computers")
+        if st.button("Tell Me a Joke!", key="joke_teller_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            else:
+                with st.spinner("Thinking of a funny one..."):
+                    prompt = templates["Joke Teller"].format(joke_topic=joke_topic_input if joke_topic_input else "anything")
+                    joke_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.8, "Brief", {"tone": "Humorous", "language_style": "Conversational"})
+                    st.markdown(joke_output)
+
+    # --- 23. Character Name Generator ---
+    with st.expander("👤 Character Name Generator"):
+        char_genre_input = st.text_input("Genre or setting for character names (e.g., Fantasy, Sci-Fi, Modern):", key="char_genre_input")
+        if st.button("Generate Names", key="char_name_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not char_genre_input: st.warning("Please provide a genre/setting.")
+            else:
+                with st.spinner("Creating identities..."):
+                    prompt = templates["Character Name Generator"].format(character_genre_theme=char_genre_input)
+                    names_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.9, "Brief", {"tone": "Creative", "language_style": "List"})
+                    st.markdown("**Suggested Character Names:**")
+                    st.markdown(names_output)
+
+    # --- 24. Random Quote Generator ---
+    with st.expander("💬 Random Quote Generator"):
+        quote_theme_input = st.text_input("Optional: Theme for the quote...", key="quote_theme_input", placeholder="e.g., success, perseverance")
+        if st.button("Get a Quote", key="quote_gen_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            else:
+                with st.spinner("Finding wisdom..."):
+                    prompt = templates["Random Quote Generator"].format(quote_theme=quote_theme_input if quote_theme_input else "any inspiring topic")
+                    quote_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.7, "Brief", {"tone": "Inspirational", "language_style": "Eloquent"})
+                    st.markdown(quote_output)
+
+    # --- 25. Fictional World Idea Generator ---
+    with st.expander("🌍 Fictional World Idea Generator"):
+        world_genre_input = st.text_input("Genre for the fictional world (e.g., High Fantasy, Cyberpunk, Post-Apocalyptic):", key="world_genre_input")
+        if st.button("Generate World Concept", key="world_idea_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not world_genre_input: st.warning("Please provide a genre.")
+            else:
+                with st.spinner("Building new realities..."):
+                    prompt = templates["Fictional World Idea Generator"].format(world_genre=world_genre_input)
+                    world_idea_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.8, "Standard", {"tone": "Imaginative", "language_style": "Descriptive"})
+                    st.markdown("**Fictional World Concept:**")
+                    st.markdown(world_idea_output)
 
     # --- Placeholder for more tools ---
     st.markdown("---")
