@@ -383,6 +383,23 @@ Query:
     templates["Character Name Generator"] = "Suggest 5 unique character names suitable for a story in the {character_genre_theme} genre/setting."
     templates["Random Quote Generator"] = "Provide an inspirational or thought-provoking quote. If possible, relate it to the theme of '{quote_theme}'."
     templates["Fictional World Idea Generator"] = "Generate a core concept or unique feature for a fictional world in the {world_genre} genre."
+    
+    # Adding 15 more new templates
+    templates["Code Comment Generator"] = "Generate helpful comments for the following code snippet. Explain what each major part does. Code:\n```\n{code_to_comment}\n```"
+    templates["Analogy Generator"] = "Create a simple analogy to explain the concept: '{concept_for_analogy}'. Make it easy to understand."
+    templates["Ethical Dilemma Generator"] = "Pose an interesting ethical dilemma related to the topic: '{dilemma_topic}'. Provide a brief scenario."
+    templates["SWOT Analysis Generator"] = "Generate a basic SWOT (Strengths, Weaknesses, Opportunities, Threats) analysis for the following idea or topic: '{swot_topic}'."
+    templates["Product Description Snippet Generator"] = "Write a short, catchy product description snippet (2-3 sentences) for a product with these features: '{product_features}'."
+    templates["Blog Post Idea Generator"] = "Generate 5 blog post ideas or titles for a blog focused on the niche: '{blog_niche}'."
+    templates["Acronym Explainer"] = "Explain what the acronym '{acronym_to_explain}' stands for and briefly describe its meaning or context."
+    templates["Rhyme Finder"] = "Find 5-7 words that rhyme with the word: '{word_for_rhyme}'."
+    templates["Business Name Idea Generator"] = "Suggest 5 creative business name ideas for a company that focuses on: '{business_concept}'."
+    templates["Workout Idea Generator"] = "Suggest a simple 15-20 minute workout routine. Optional focus: {workout_focus_or_equipment}."
+    templates["Gift Idea Suggester"] = "Suggest 3 thoughtful gift ideas for someone interested in: '{recipient_interests}'. Consider different price points if possible (low, medium, high)."
+    templates["Travel Itinerary Snippet"] = "Create a brief (1-day) travel itinerary snippet for a trip to '{destination_city}'. Include 2-3 activities and a meal suggestion."
+    templates["Ice Breaker Question Generator"] = "Generate 5 fun and engaging ice breaker questions suitable for a {group_setting} setting (e.g., team meeting, new class)."
+    templates["Personalized Affirmation Generator"] = "Create 3 personalized positive affirmations for someone working towards the goal: '{personal_goal}'."
+    templates["Excuse Generator (Humorous)"] = "Generate a funny and obviously fake excuse for being late to/missing '{event_or_situation}'."
 
     return templates
 
@@ -1592,6 +1609,199 @@ if st.session_state.selected_main_tab == "🛠️ Misc. Features":
                     world_idea_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.8, "Standard", {"tone": "Imaginative", "language_style": "Descriptive"})
                     st.markdown("**Fictional World Concept:**")
                     st.markdown(world_idea_output)
+
+    # --- 26. Code Comment Generator ---
+    with st.expander("✍️ Code Comment Generator"):
+        code_to_comment_input = st.text_area("Paste code to generate comments for:", height=150, key="code_comment_input")
+        if st.button("Generate Comments", key="code_comment_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not code_to_comment_input: st.warning("Please paste code.")
+            else:
+                with st.spinner("AI is commenting the code..."):
+                    prompt = templates["Code Comment Generator"].format(code_to_comment=code_to_comment_input)
+                    comments_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.4, "Standard", {"tone": "Informative", "language_style": "Technical"})
+                    st.markdown("**Generated Comments (and original code):**")
+                    st.markdown(comments_output)
+
+    # --- 27. Analogy Generator ---
+    with st.expander("🤝 Analogy Generator"):
+        analogy_concept_input = st.text_input("Concept to explain with an analogy:", key="analogy_concept_input")
+        if st.button("Create Analogy", key="analogy_gen_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not analogy_concept_input: st.warning("Please enter a concept.")
+            else:
+                with st.spinner("Thinking of a good comparison..."):
+                    prompt = templates["Analogy Generator"].format(concept_for_analogy=analogy_concept_input)
+                    analogy_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.7, "Brief", {"tone": "Creative", "language_style": "Simplified"})
+                    st.markdown("**Generated Analogy:**")
+                    st.markdown(analogy_output)
+
+    # --- 28. Ethical Dilemma Generator ---
+    with st.expander("🤔 Ethical Dilemma Generator"):
+        dilemma_topic_input = st.text_input("Topic for an ethical dilemma:", key="dilemma_topic_input", placeholder="e.g., AI, Medicine, Business")
+        if st.button("Generate Dilemma", key="dilemma_gen_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not dilemma_topic_input: st.warning("Please enter a topic.")
+            else:
+                with st.spinner("Pondering ethical quandaries..."):
+                    prompt = templates["Ethical Dilemma Generator"].format(dilemma_topic=dilemma_topic_input)
+                    dilemma_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.8, "Standard", {"tone": "Thought-provoking", "language_style": "Narrative"})
+                    st.markdown("**Ethical Dilemma:**")
+                    st.markdown(dilemma_output)
+
+    # --- 29. SWOT Analysis Generator ---
+    with st.expander("📊 SWOT Analysis Generator (Basic)"):
+        swot_topic_input = st.text_input("Topic or idea for SWOT analysis:", key="swot_topic_input")
+        if st.button("Generate SWOT", key="swot_gen_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not swot_topic_input: st.warning("Please enter a topic/idea.")
+            else:
+                with st.spinner("Analyzing strengths, weaknesses, opportunities, and threats..."):
+                    prompt = templates["SWOT Analysis Generator"].format(swot_topic=swot_topic_input)
+                    swot_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.5, "Standard", {"tone": "Analytical", "language_style": "Structured"})
+                    st.markdown("**Basic SWOT Analysis:**")
+                    st.markdown(swot_output)
+
+    # --- 30. Product Description Snippet Generator ---
+    with st.expander("🛍️ Product Description Snippet Generator"):
+        product_features_input = st.text_area("Key features of the product:", height=100, key="product_features_input")
+        if st.button("Generate Snippet", key="prod_desc_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not product_features_input: st.warning("Please list some product features.")
+            else:
+                with st.spinner("Crafting a catchy description..."):
+                    prompt = templates["Product Description Snippet Generator"].format(product_features=product_features_input)
+                    desc_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.7, "Brief", {"tone": "Persuasive", "language_style": "Engaging"})
+                    st.markdown("**Product Description Snippet:**")
+                    st.markdown(desc_output)
+
+    # --- 31. Blog Post Idea Generator ---
+    with st.expander("📝 Blog Post Idea Generator"):
+        blog_niche_input = st.text_input("Your blog niche/topic:", key="blog_niche_input")
+        if st.button("Generate Blog Ideas", key="blog_idea_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not blog_niche_input: st.warning("Please enter your blog niche.")
+            else:
+                with st.spinner("Brainstorming blog topics..."):
+                    prompt = templates["Blog Post Idea Generator"].format(blog_niche=blog_niche_input)
+                    blog_ideas_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.8, "Brief", {"tone": "Creative", "language_style": "Catchy"})
+                    st.markdown("**Blog Post Ideas/Titles:**")
+                    st.markdown(blog_ideas_output)
+
+    # --- 32. Acronym Explainer ---
+    with st.expander("ℹ️ Acronym Explainer"):
+        acronym_input = st.text_input("Enter acronym to explain (e.g., NASA, HTML):", key="acronym_input")
+        if st.button("Explain Acronym", key="acronym_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not acronym_input: st.warning("Please enter an acronym.")
+            else:
+                with st.spinner("Looking up acronym..."):
+                    prompt = templates["Acronym Explainer"].format(acronym_to_explain=acronym_input)
+                    acronym_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.3, "Brief", {"tone": "Informative", "language_style": "Concise"})
+                    st.markdown(acronym_output)
+
+    # --- 33. Rhyme Finder ---
+    with st.expander("🎤 Rhyme Finder"):
+        rhyme_word_input = st.text_input("Word to find rhymes for:", key="rhyme_word_input")
+        if st.button("Find Rhymes", key="rhyme_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not rhyme_word_input: st.warning("Please enter a word.")
+            else:
+                with st.spinner("Searching for rhymes..."):
+                    prompt = templates["Rhyme Finder"].format(word_for_rhyme=rhyme_word_input)
+                    rhymes_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.6, "Brief", {"tone": "Playful", "language_style": "List"})
+                    st.markdown(f"**Words that rhyme with '{rhyme_word_input}':**")
+                    st.markdown(rhymes_output)
+
+    # --- 34. Business Name Idea Generator ---
+    with st.expander("🏢 Business Name Idea Generator"):
+        business_concept_input = st.text_input("Describe your business concept briefly:", key="biz_concept_input")
+        if st.button("Generate Business Names", key="biz_name_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not business_concept_input: st.warning("Please describe your business concept.")
+            else:
+                with st.spinner("Branding in progress..."):
+                    prompt = templates["Business Name Idea Generator"].format(business_concept=business_concept_input)
+                    biz_names_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.9, "Brief", {"tone": "Creative", "language_style": "Catchy"})
+                    st.markdown("**Suggested Business Names:**")
+                    st.markdown(biz_names_output)
+
+    # --- 35. Workout Idea Generator ---
+    with st.expander("💪 Workout Idea Generator (Simple)"):
+        workout_focus_input = st.text_input("Optional: Focus area or available equipment (e.g., core, bodyweight, dumbbells):", key="workout_focus_input")
+        if st.button("Suggest Workout", key="workout_idea_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            else:
+                with st.spinner("Planning your sweat session..."):
+                    prompt = templates["Workout Idea Generator"].format(workout_focus_or_equipment=workout_focus_input if workout_focus_input else "general fitness")
+                    workout_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.6, "Standard", {"tone": "Encouraging", "language_style": "Instructional"})
+                    st.markdown("**Simple Workout Idea (15-20 mins):**")
+                    st.markdown(workout_output)
+
+    # --- 36. Gift Idea Suggester ---
+    with st.expander("🎁 Gift Idea Suggester"):
+        recipient_interests_input = st.text_input("Recipient's main interests (e.g., reading, hiking, tech):", key="gift_interests_input")
+        if st.button("Suggest Gifts", key="gift_idea_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not recipient_interests_input: st.warning("Please enter recipient's interests.")
+            else:
+                with st.spinner("Brainstorming gift ideas..."):
+                    prompt = templates["Gift Idea Suggester"].format(recipient_interests=recipient_interests_input)
+                    gift_ideas_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.7, "Standard", {"tone": "Helpful", "language_style": "Descriptive"})
+                    st.markdown("**Gift Suggestions:**")
+                    st.markdown(gift_ideas_output)
+
+    # --- 37. Travel Itinerary Snippet ---
+    with st.expander("✈️ Travel Itinerary Snippet (1-Day)"):
+        destination_city_input = st.text_input("Destination City:", key="travel_dest_input")
+        if st.button("Create Itinerary Snippet", key="travel_snippet_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not destination_city_input: st.warning("Please enter a destination city.")
+            else:
+                with st.spinner("Planning your mini-adventure..."):
+                    prompt = templates["Travel Itinerary Snippet"].format(destination_city=destination_city_input)
+                    itinerary_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.6, "Standard", {"tone": "Informative", "language_style": "Organized"})
+                    st.markdown(f"**1-Day Itinerary Snippet for {destination_city_input}:**")
+                    st.markdown(itinerary_output)
+
+    # --- 38. Ice Breaker Question Generator ---
+    with st.expander("🧊 Ice Breaker Question Generator"):
+        group_setting_input = st.text_input("Group setting (e.g., team meeting, new class, party):", key="ice_breaker_setting_input")
+        if st.button("Generate Ice Breakers", key="ice_breaker_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not group_setting_input: st.warning("Please specify the group setting.")
+            else:
+                with st.spinner("Breaking the ice..."):
+                    prompt = templates["Ice Breaker Question Generator"].format(group_setting=group_setting_input)
+                    ice_breakers_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.8, "Brief", {"tone": "Fun", "language_style": "Conversational"})
+                    st.markdown("**Ice Breaker Questions:**")
+                    st.markdown(ice_breakers_output)
+
+    # --- 39. Personalized Affirmation Generator ---
+    with st.expander("🌟 Personalized Affirmation Generator"):
+        personal_goal_input = st.text_input("Your personal goal (e.g., be more confident, learn a new skill):", key="affirmation_goal_input")
+        if st.button("Create Affirmations", key="affirmation_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not personal_goal_input: st.warning("Please enter your personal goal.")
+            else:
+                with st.spinner("Crafting positive vibes..."):
+                    prompt = templates["Personalized Affirmation Generator"].format(personal_goal=personal_goal_input)
+                    affirmations_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.7, "Brief", {"tone": "Empowering", "language_style": "Positive"})
+                    st.markdown("**Your Personalized Affirmations:**")
+                    st.markdown(affirmations_output)
+
+    # --- 40. Excuse Generator (Humorous) ---
+    with st.expander("😂 Excuse Generator (Humorous)"):
+        event_situation_input = st.text_input("Event/Situation you need an excuse for (e.g., being late for a meeting, missing homework):", key="excuse_event_input")
+        if st.button("Generate Funny Excuse", key="excuse_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not event_situation_input: st.warning("Please specify the event/situation.")
+            else:
+                with st.spinner("Fabricating a tall tale..."):
+                    prompt = templates["Excuse Generator (Humorous)"].format(event_or_situation=event_situation_input)
+                    excuse_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.9, "Brief", {"tone": "Humorous", "language_style": "Exaggerated"})
+                    st.markdown("**Your Hilariously Unbelievable Excuse:**")
+                    st.markdown(excuse_output)
 
     # --- Placeholder for more tools ---
     st.markdown("---")
