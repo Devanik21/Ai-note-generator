@@ -413,6 +413,17 @@ Query:
     templates["Data Interpretation Helper"] = "Given the following simple data description or observation: '{data_description}', provide a brief interpretation or suggest what it might imply."
     templates["Learning Objective Generator"] = "Generate 3-5 clear and measurable learning objectives for a lesson or study session on the topic: '{learning_topic}'."
 
+    # Adding 10 NEW advanced, serious, student/professional-focused templates (41-50)
+    templates["Argumentative Essay Component Generator"] = "For an argumentative essay on the topic: '{essay_topic}', generate a strong {component_type} (e.g., Thesis Statement, Counter-Argument, Rebuttal, Supporting Point with evidence). Be specific and well-reasoned."
+    templates["Research Methodology Suggester"] = "For a research study in the field of '{field_of_study}' addressing the research question/problem: '{research_question}', suggest 2-3 appropriate research methodologies. Briefly explain the suitability and limitations of each."
+    templates["Data Analysis Plan Outline"] = "Outline a detailed data analysis plan for a study with the primary objective: '{research_objective}', expecting to work with {data_type} data (e.g., quantitative survey data, qualitative interview transcripts, mixed-methods). Include key steps from data preparation/cleaning, descriptive analysis, inferential analysis (if applicable), to interpretation and reporting."
+    templates["Grant Proposal Snippet Generator"] = "Draft a compelling and concise snippet for the '{target_section}' section (e.g., Problem Statement, Project Objectives, Expected Outcomes, Broader Impacts) of a grant proposal for a project focused on: '{project_idea}'. Aim for clarity, impact, and alignment with typical grant requirements."
+    templates["Peer Review Feedback Generator (Constructive)"] = "Provide constructive and actionable peer review feedback on the following academic text snippet, focusing specifically on '{focus_area}' (e.g., clarity of argument, methodological rigor, literature engagement, contribution to knowledge). Offer 3-4 specific suggestions for improvement. Text: '{text_for_review}'"
+    templates["Presentation Script Outline Generator"] = "Create a structured and engaging outline for a {length} (e.g., 15-minute, 30-minute, 1-hour) academic or professional presentation on the topic: '{presentation_topic}'. The target audience is '{target_audience}'. Include sections for Introduction (hook, agenda), Key Talking Points (with sub-points and suggested visuals/examples), and Conclusion (summary, call to action, Q&A)."
+    templates["Technical Document Explainer (Advanced)"] = "Explain the following complex technical document snippet in terms understandable for a '{explanation_level}' (e.g., non-technical manager, junior engineer in a different field, subject matter expert needing a refresher). Focus on its core technical meaning, operational implications, and potential challenges or benefits. Snippet: '{technical_snippet}'"
+    templates["Case Study Creator (from scenario)"] = "Based on the following detailed scenario or problem description, structure a comprehensive case study. Identify the core problem/challenge, relevant background and context, key stakeholders and their perspectives, critical decisions or events, and formulate 3-5 insightful discussion questions for analysis. Scenario: '{scenario_description}'"
+    templates["Syllabus Component Generator (Advanced)"] = "For a university-level course titled '{course_title}', draft a detailed and pedagogically sound '{component_type}' section of a syllabus (e.g., Detailed Weekly Schedule with Readings, Comprehensive Assessment Strategy with Rubric Criteria, Policy on Academic Integrity with Examples, Inclusive Learning Environment Statement). Ensure it is clear, comprehensive, and aligns with best practices in higher education."
+    templates["Ethical Review Considerations Lister (Research)"] = "For a research project proposal focused on '{research_proposal_idea}', identify and elaborate on 4-6 key ethical considerations that would need to be thoroughly addressed in an Institutional Review Board (IRB) or ethics committee application. For each consideration, explain why it's relevant and suggest how it might be mitigated or managed."
     return templates
 
 # Function to generate content with AI
@@ -1943,6 +1954,145 @@ if st.session_state.selected_main_tab == "🛠️ Misc. Features":
                     learning_objectives_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.6, "Brief", {"tone": "Educational", "language_style": "Structured"})
                     st.markdown("**Suggested Learning Objectives:**")
                     st.markdown(learning_objectives_output)
+
+    # --- 41. Argumentative Essay Component Generator ---
+    with st.expander("✍️ Argumentative Essay Component Generator"):
+        essay_topic_arg_input = st.text_input("Essay Topic:", key="essay_topic_arg_input")
+        component_type_arg = st.selectbox("Component to Generate:", ["Thesis Statement", "Counter-Argument", "Rebuttal", "Supporting Point"], key="essay_component_arg_select")
+        if st.button("Generate Essay Component", key="essay_component_arg_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not essay_topic_arg_input or not component_type_arg: st.warning("Please provide all inputs.")
+            else:
+                with st.spinner(f"Generating {component_type_arg.lower()}..."):
+                    prompt = templates["Argumentative Essay Component Generator"].format(essay_topic=essay_topic_arg_input, component_type=component_type_arg)
+                    essay_comp_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.6, "Standard", {"tone": "Academic", "language_style": "Persuasive"})
+                    st.markdown(f"**Generated {component_type_arg}:**")
+                    st.markdown(essay_comp_output)
+
+    # --- 42. Research Methodology Suggester ---
+    with st.expander("🔬 Research Methodology Suggester"):
+        research_question_meth_input = st.text_area("Research Question/Problem:", height=100, key="research_question_meth_input")
+        field_of_study_meth_input = st.text_input("Field of Study (e.g., Sociology, Computer Science):", key="field_study_meth_input")
+        if st.button("Suggest Methodologies", key="research_meth_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not research_question_meth_input or not field_of_study_meth_input: st.warning("Please provide all inputs.")
+            else:
+                with st.spinner("Suggesting research methodologies..."):
+                    prompt = templates["Research Methodology Suggester"].format(research_question=research_question_meth_input, field_of_study=field_of_study_meth_input)
+                    methodology_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.5, "Comprehensive", {"tone": "Academic", "language_style": "Analytical"})
+                    st.markdown("**Suggested Research Methodologies:**")
+                    st.markdown(methodology_output)
+
+    # --- 43. Data Analysis Plan Outline ---
+    with st.expander("📊 Data Analysis Plan Outline"):
+        research_objective_da_input = st.text_input("Primary Research Objective:", key="research_obj_da_input")
+        data_type_da_input = st.selectbox("Expected Data Type:", ["Quantitative (e.g., surveys, experiments)", "Qualitative (e.g., interviews, observations)", "Mixed-Methods"], key="data_type_da_select")
+        if st.button("Outline Analysis Plan", key="data_analysis_plan_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not research_objective_da_input: st.warning("Please provide the research objective.")
+            else:
+                with st.spinner("Outlining data analysis plan..."):
+                    prompt = templates["Data Analysis Plan Outline"].format(research_objective=research_objective_da_input, data_type=data_type_da_input)
+                    da_plan_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.4, "Comprehensive", {"tone": "Technical", "language_style": "Structured"})
+                    st.markdown("**Data Analysis Plan Outline:**")
+                    st.markdown(da_plan_output)
+
+    # --- 44. Grant Proposal Snippet Generator ---
+    with st.expander("💰 Grant Proposal Snippet Generator"):
+        project_idea_grant_input = st.text_area("Brief Project Idea/Focus:", height=100, key="project_idea_grant_input")
+        target_section_grant_select = st.selectbox("Target Grant Section:", ["Problem Statement", "Project Objectives", "Specific Aims", "Methodology Overview", "Expected Outcomes", "Broader Impacts", "Innovation"], key="grant_section_select")
+        if st.button("Generate Grant Snippet", key="grant_snippet_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not project_idea_grant_input: st.warning("Please describe your project idea.")
+            else:
+                with st.spinner(f"Drafting snippet for {target_section_grant_select}..."):
+                    prompt = templates["Grant Proposal Snippet Generator"].format(project_idea=project_idea_grant_input, target_section=target_section_grant_select)
+                    grant_snippet_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.6, "Standard", {"tone": "Persuasive", "language_style": "Formal"})
+                    st.markdown(f"**Generated Snippet for {target_section_grant_select}:**")
+                    st.markdown(grant_snippet_output)
+
+    # --- 45. Peer Review Feedback Generator (Constructive) ---
+    with st.expander("🧐 Peer Review Feedback Generator"):
+        text_for_review_pr_input = st.text_area("Paste academic text snippet for review (1-2 paragraphs recommended):", height=150, key="text_review_pr_input")
+        focus_area_pr_input = st.text_input("Specific focus area for feedback (e.g., argument clarity, evidence use, methodological soundness):", key="focus_area_pr_input")
+        if st.button("Generate Peer Review Feedback", key="peer_review_feedback_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not text_for_review_pr_input or not focus_area_pr_input: st.warning("Please provide text and a focus area.")
+            else:
+                with st.spinner("Generating constructive feedback..."):
+                    prompt = templates["Peer Review Feedback Generator (Constructive)"].format(text_for_review=text_for_review_pr_input, focus_area=focus_area_pr_input)
+                    pr_feedback_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.5, "Standard", {"tone": "Constructive", "language_style": "Academic"})
+                    st.markdown("**Constructive Peer Review Feedback:**")
+                    st.markdown(pr_feedback_output)
+
+    # --- 46. Presentation Script Outline Generator ---
+    with st.expander("🎤 Presentation Script Outline Generator"):
+        presentation_topic_pres_input = st.text_input("Presentation Topic:", key="pres_topic_input")
+        target_audience_pres_input = st.text_input("Target Audience:", key="pres_audience_input", placeholder="e.g., fellow students, industry professionals, general public")
+        presentation_length_pres_input = st.selectbox("Desired Length:", ["10-15 minutes", "20-30 minutes", "45-60 minutes"], key="pres_length_select")
+        if st.button("Generate Presentation Outline", key="pres_outline_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not presentation_topic_pres_input or not target_audience_pres_input: st.warning("Please provide topic and audience.")
+            else:
+                with st.spinner("Structuring your presentation..."):
+                    prompt = templates["Presentation Script Outline Generator"].format(presentation_topic=presentation_topic_pres_input, target_audience=target_audience_pres_input, length=presentation_length_pres_input)
+                    pres_outline_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.6, "Comprehensive", {"tone": "Engaging", "language_style": "Structured"})
+                    st.markdown("**Presentation Outline:**")
+                    st.markdown(pres_outline_output)
+
+    # --- 47. Technical Document Explainer (Advanced) ---
+    with st.expander("⚙️ Technical Document Explainer (Advanced)"):
+        technical_snippet_tech_input = st.text_area("Paste complex technical snippet:", height=150, key="tech_snippet_input")
+        explanation_level_tech_select = st.selectbox("Explain for:", ["Non-technical Manager", "Junior Engineer (different field)", "Layperson with basic understanding", "Subject Matter Expert (refresher)"], key="tech_explain_level_select")
+        if st.button("Explain Technical Snippet", key="tech_explain_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not technical_snippet_tech_input: st.warning("Please paste a technical snippet.")
+            else:
+                with st.spinner("Deciphering technical jargon..."):
+                    prompt = templates["Technical Document Explainer (Advanced)"].format(technical_snippet=technical_snippet_tech_input, explanation_level=explanation_level_tech_select)
+                    tech_explain_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.4, "Standard", {"tone": "Informative", "language_style": "Simplified"})
+                    st.markdown(f"**Explanation for {explanation_level_tech_select}:**")
+                    st.markdown(tech_explain_output)
+
+    # --- 48. Case Study Creator (from scenario) ---
+    with st.expander("📈 Case Study Creator (from scenario)"):
+        scenario_desc_case_input = st.text_area("Provide detailed scenario or problem description:", height=200, key="case_scenario_input")
+        if st.button("Create Case Study Structure", key="case_study_create_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not scenario_desc_case_input: st.warning("Please provide a scenario.")
+            else:
+                with st.spinner("Structuring case study..."):
+                    prompt = templates["Case Study Creator (from scenario)"].format(scenario_description=scenario_desc_case_input)
+                    case_study_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.6, "Comprehensive", {"tone": "Analytical", "language_style": "Formal"})
+                    st.markdown("**Case Study Structure & Discussion Points:**")
+                    st.markdown(case_study_output)
+
+    # --- 49. Syllabus Component Generator (Advanced) ---
+    with st.expander("📜 Syllabus Component Generator (Advanced)"):
+        course_title_syllabus_input = st.text_input("Course Title:", key="syllabus_course_title_input")
+        component_type_syllabus_select = st.selectbox("Syllabus Component to Draft:", ["Detailed Weekly Schedule (with Readings/Topics)", "Comprehensive Assessment Strategy (with Rubric Outlines)", "Policy on Academic Integrity (with Examples)", "Inclusive Learning Environment Statement", "Course Learning Outcomes (Bloom's Taxonomy based)"], key="syllabus_component_select")
+        if st.button("Draft Syllabus Component", key="syllabus_component_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not course_title_syllabus_input: st.warning("Please provide a course title.")
+            else:
+                with st.spinner(f"Drafting '{component_type_syllabus_select}'..."):
+                    prompt = templates["Syllabus Component Generator (Advanced)"].format(course_title=course_title_syllabus_input, component_type=component_type_syllabus_select)
+                    syllabus_comp_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.5, "Comprehensive", {"tone": "Academic", "language_style": "Formal"})
+                    st.markdown(f"**Drafted Syllabus Component: {component_type_syllabus_select}**")
+                    st.markdown(syllabus_comp_output)
+
+    # --- 50. Ethical Review Considerations Lister (Research) ---
+    with st.expander("⚖️ Ethical Review Considerations Lister (Research)"):
+        research_proposal_ethics_input = st.text_area("Briefly describe your research proposal/idea:", height=100, key="ethics_proposal_input")
+        if st.button("List Ethical Considerations", key="ethics_considerations_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not research_proposal_ethics_input: st.warning("Please describe your research idea.")
+            else:
+                with st.spinner("Identifying ethical considerations..."):
+                    prompt = templates["Ethical Review Considerations Lister (Research)"].format(research_proposal_idea=research_proposal_ethics_input)
+                    ethics_list_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.6, "Standard", {"tone": "Analytical", "language_style": "Formal"})
+                    st.markdown("**Key Ethical Considerations for Review:**")
+                    st.markdown(ethics_list_output)
 
     # --- Placeholder for more tools ---
     st.markdown("---")
