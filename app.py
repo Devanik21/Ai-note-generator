@@ -384,22 +384,34 @@ Query:
     templates["Random Quote Generator"] = "Provide an inspirational or thought-provoking quote. If possible, relate it to the theme of '{quote_theme}'."
     templates["Fictional World Idea Generator"] = "Generate a core concept or unique feature for a fictional world in the {world_genre} genre."
     
-    # Adding 15 more new templates
+    # Keeping some useful misc templates from previous additions
     templates["Code Comment Generator"] = "Generate helpful comments for the following code snippet. Explain what each major part does. Code:\n```\n{code_to_comment}\n```"
     templates["Analogy Generator"] = "Create a simple analogy to explain the concept: '{concept_for_analogy}'. Make it easy to understand."
     templates["Ethical Dilemma Generator"] = "Pose an interesting ethical dilemma related to the topic: '{dilemma_topic}'. Provide a brief scenario."
     templates["SWOT Analysis Generator"] = "Generate a basic SWOT (Strengths, Weaknesses, Opportunities, Threats) analysis for the following idea or topic: '{swot_topic}'."
-    templates["Product Description Snippet Generator"] = "Write a short, catchy product description snippet (2-3 sentences) for a product with these features: '{product_features}'."
-    templates["Blog Post Idea Generator"] = "Generate 5 blog post ideas or titles for a blog focused on the niche: '{blog_niche}'."
     templates["Acronym Explainer"] = "Explain what the acronym '{acronym_to_explain}' stands for and briefly describe its meaning or context."
-    templates["Rhyme Finder"] = "Find 5-7 words that rhyme with the word: '{word_for_rhyme}'."
-    templates["Business Name Idea Generator"] = "Suggest 5 creative business name ideas for a company that focuses on: '{business_concept}'."
-    templates["Workout Idea Generator"] = "Suggest a simple 15-20 minute workout routine. Optional focus: {workout_focus_or_equipment}."
-    templates["Gift Idea Suggester"] = "Suggest 3 thoughtful gift ideas for someone interested in: '{recipient_interests}'. Consider different price points if possible (low, medium, high)."
-    templates["Travel Itinerary Snippet"] = "Create a brief (1-day) travel itinerary snippet for a trip to '{destination_city}'. Include 2-3 activities and a meal suggestion."
-    templates["Ice Breaker Question Generator"] = "Generate 5 fun and engaging ice breaker questions suitable for a {group_setting} setting (e.g., team meeting, new class)."
-    templates["Personalized Affirmation Generator"] = "Create 3 personalized positive affirmations for someone working towards the goal: '{personal_goal}'."
-    templates["Excuse Generator (Humorous)"] = "Generate a funny and obviously fake excuse for being late to/missing '{event_or_situation}'."
+
+    # Adding 20 NEW serious, student-focused templates to reach 35 total in Misc tab
+    templates["Essay Outline Generator"] = "Generate a structured outline for an essay on the topic: '{essay_topic}'. Include sections for Introduction, Body Paragraphs (suggesting 3-5 main points), and Conclusion."
+    templates["Study Plan Creator (Daily/Weekly)"] = "Create a simple {timeframe} study plan for the topic '{study_topic}'. Suggest key areas to focus on and allocate time slots." # timeframe: 'daily' or 'weekly'
+    templates["Concept Mapping (Text-based)"] = "Generate a text-based concept map structure for the topic: '{concept_map_topic}'. Start with the central concept and branch out to related sub-concepts and details using indentation and bullet points."
+    templates["Research Question Refiner"] = "Refine the following initial research question to make it more focused, specific, and researchable: '{initial_research_question}'."
+    templates["Abstract Generator"] = "Write a concise abstract (approx. 150-250 words) for a paper or study on the topic: '{abstract_topic}'. Include brief mention of purpose, methods (if applicable), key findings, and conclusion."
+    templates["Literature Review Outline Generator"] = "Generate a structured outline for a literature review on the topic: '{lit_review_topic}'. Include sections for Introduction, Thematic Analysis (suggesting key themes), Discussion, and Conclusion."
+    templates["Problem Solving Steps Generator"] = "Outline the general steps involved in solving a problem related to: '{problem_domain}'. Provide a structured approach."
+    templates["Critical Thinking Prompt Generator"] = "Generate 3-5 critical thinking questions or prompts related to the topic: '{critical_thinking_topic}'."
+    templates["Study Group Discussion Questions"] = "Generate 5-7 discussion questions suitable for a study group focusing on the topic: '{study_group_topic}'."
+    templates["Exam Question Predictor"] = "Based on the topic '{exam_topic}', suggest 3-5 potential exam questions (e.g., essay, short answer) that might be asked."
+    templates["Academic Terminology Explainer"] = "Explain the academic term '{academic_term}' in detail, providing its definition, context, and usage examples."
+    templates["Historical Context Generator"] = "Provide the key historical context surrounding the event or person: '{historical_subject}'. Briefly explain the relevant time period, major influences, and immediate aftermath."
+    templates["Scientific Process Outline"] = "Outline the typical steps of the scientific process as applied to studying: '{scientific_topic}'."
+    templates["Mathematical Concept Explainer"] = "Explain the mathematical concept '{math_concept}' in clear terms, including its definition, key properties, and a simple example."
+    templates["Grammar/Style Checker (Basic)"] = "Review the following text for basic grammar errors, awkward phrasing, and suggestions for improving clarity and conciseness. Provide specific suggestions for improvement. Text: '{text_to_check}'."
+    templates["Paraphrasing Tool (Academic)"] = "Paraphrase the following text in an academic style, ensuring the original meaning is retained but the wording is significantly different. Original text: '{text_to_paraphrase}'."
+    templates["Counter-Argument Generator"] = "For the argument '{main_argument}', generate 2-3 potential counter-arguments or opposing viewpoints."
+    templates["Hypothesis Generator"] = "Based on the topic or observation '{observation_or_topic}', suggest 1-2 testable hypotheses for a study or experiment."
+    templates["Data Interpretation Helper"] = "Given the following simple data description or observation: '{data_description}', provide a brief interpretation or suggest what it might imply."
+    templates["Learning Objective Generator"] = "Generate 3-5 clear and measurable learning objectives for a lesson or study session on the topic: '{learning_topic}'."
 
     return templates
 
@@ -1610,10 +1622,10 @@ if st.session_state.selected_main_tab == "🛠️ Misc. Features":
                     st.markdown("**Fictional World Concept:**")
                     st.markdown(world_idea_output)
 
-    # --- 26. Code Comment Generator ---
+    # --- 16. Code Comment Generator ---
     with st.expander("✍️ Code Comment Generator"):
         code_to_comment_input = st.text_area("Paste code to generate comments for:", height=150, key="code_comment_input")
-        if st.button("Generate Comments", key="code_comment_btn"):
+        if st.button("Generate Comments", key="code_comment_btn_misc"):
             if not st.session_state.api_key: st.error("API key required.")
             elif not code_to_comment_input: st.warning("Please paste code.")
             else:
@@ -1623,10 +1635,10 @@ if st.session_state.selected_main_tab == "🛠️ Misc. Features":
                     st.markdown("**Generated Comments (and original code):**")
                     st.markdown(comments_output)
 
-    # --- 27. Analogy Generator ---
+    # --- 17. Analogy Generator ---
     with st.expander("🤝 Analogy Generator"):
         analogy_concept_input = st.text_input("Concept to explain with an analogy:", key="analogy_concept_input")
-        if st.button("Create Analogy", key="analogy_gen_btn"):
+        if st.button("Create Analogy", key="analogy_gen_btn_misc"):
             if not st.session_state.api_key: st.error("API key required.")
             elif not analogy_concept_input: st.warning("Please enter a concept.")
             else:
@@ -1636,10 +1648,10 @@ if st.session_state.selected_main_tab == "🛠️ Misc. Features":
                     st.markdown("**Generated Analogy:**")
                     st.markdown(analogy_output)
 
-    # --- 28. Ethical Dilemma Generator ---
+    # --- 18. Ethical Dilemma Generator ---
     with st.expander("🤔 Ethical Dilemma Generator"):
         dilemma_topic_input = st.text_input("Topic for an ethical dilemma:", key="dilemma_topic_input", placeholder="e.g., AI, Medicine, Business")
-        if st.button("Generate Dilemma", key="dilemma_gen_btn"):
+        if st.button("Generate Dilemma", key="dilemma_gen_btn_misc"):
             if not st.session_state.api_key: st.error("API key required.")
             elif not dilemma_topic_input: st.warning("Please enter a topic.")
             else:
@@ -1649,10 +1661,10 @@ if st.session_state.selected_main_tab == "🛠️ Misc. Features":
                     st.markdown("**Ethical Dilemma:**")
                     st.markdown(dilemma_output)
 
-    # --- 29. SWOT Analysis Generator ---
+    # --- 19. SWOT Analysis Generator ---
     with st.expander("📊 SWOT Analysis Generator (Basic)"):
         swot_topic_input = st.text_input("Topic or idea for SWOT analysis:", key="swot_topic_input")
-        if st.button("Generate SWOT", key="swot_gen_btn"):
+        if st.button("Generate SWOT", key="swot_gen_btn_misc"):
             if not st.session_state.api_key: st.error("API key required.")
             elif not swot_topic_input: st.warning("Please enter a topic/idea.")
             else:
@@ -1662,10 +1674,10 @@ if st.session_state.selected_main_tab == "🛠️ Misc. Features":
                     st.markdown("**Basic SWOT Analysis:**")
                     st.markdown(swot_output)
 
-    # --- 30. Product Description Snippet Generator ---
-    with st.expander("🛍️ Product Description Snippet Generator"):
-        product_features_input = st.text_area("Key features of the product:", height=100, key="product_features_input")
-        if st.button("Generate Snippet", key="prod_desc_btn"):
+    # --- 20. Acronym Explainer ---
+    with st.expander("ℹ️ Acronym Explainer"):
+        acronym_input = st.text_input("Enter acronym to explain (e.g., NASA, HTML):", key="acronym_input")
+        if st.button("Explain Acronym", key="acronym_btn_misc"):
             if not st.session_state.api_key: st.error("API key required.")
             elif not product_features_input: st.warning("Please list some product features.")
             else:
@@ -1675,10 +1687,10 @@ if st.session_state.selected_main_tab == "🛠️ Misc. Features":
                     st.markdown("**Product Description Snippet:**")
                     st.markdown(desc_output)
 
-    # --- 31. Blog Post Idea Generator ---
-    with st.expander("📝 Blog Post Idea Generator"):
-        blog_niche_input = st.text_input("Your blog niche/topic:", key="blog_niche_input")
-        if st.button("Generate Blog Ideas", key="blog_idea_btn"):
+    # --- 21. Essay Outline Generator ---
+    with st.expander("📄 Essay Outline Generator"):
+        essay_topic_input = st.text_input("Topic for your essay:", key="essay_topic_input")
+        if st.button("Generate Outline", key="essay_outline_btn"):
             if not st.session_state.api_key: st.error("API key required.")
             elif not blog_niche_input: st.warning("Please enter your blog niche.")
             else:
@@ -1688,10 +1700,11 @@ if st.session_state.selected_main_tab == "🛠️ Misc. Features":
                     st.markdown("**Blog Post Ideas/Titles:**")
                     st.markdown(blog_ideas_output)
 
-    # --- 32. Acronym Explainer ---
-    with st.expander("ℹ️ Acronym Explainer"):
-        acronym_input = st.text_input("Enter acronym to explain (e.g., NASA, HTML):", key="acronym_input")
-        if st.button("Explain Acronym", key="acronym_btn"):
+    # --- 22. Study Plan Creator (Daily/Weekly) ---
+    with st.expander("📅 Study Plan Creator"):
+        study_topic_input = st.text_input("Topic you need to study:", key="study_plan_topic_input")
+        study_timeframe_input = st.selectbox("Plan for:", ["daily", "weekly"], key="study_plan_timeframe_select")
+        if st.button("Create Study Plan", key="study_plan_btn"):
             if not st.session_state.api_key: st.error("API key required.")
             elif not acronym_input: st.warning("Please enter an acronym.")
             else:
@@ -1701,9 +1714,10 @@ if st.session_state.selected_main_tab == "🛠️ Misc. Features":
                     st.markdown(acronym_output)
 
     # --- 33. Rhyme Finder ---
-    with st.expander("🎤 Rhyme Finder"):
-        rhyme_word_input = st.text_input("Word to find rhymes for:", key="rhyme_word_input")
-        if st.button("Find Rhymes", key="rhyme_btn"):
+    # --- 23. Concept Mapping (Text-based) ---
+    with st.expander("🗺️ Concept Mapping (Text-based)"):
+        concept_map_topic_input = st.text_input("Topic for concept map:", key="concept_map_topic_input")
+        if st.button("Generate Concept Map Structure", key="concept_map_btn"):
             if not st.session_state.api_key: st.error("API key required.")
             elif not rhyme_word_input: st.warning("Please enter a word.")
             else:
@@ -1713,10 +1727,10 @@ if st.session_state.selected_main_tab == "🛠️ Misc. Features":
                     st.markdown(f"**Words that rhyme with '{rhyme_word_input}':**")
                     st.markdown(rhymes_output)
 
-    # --- 34. Business Name Idea Generator ---
-    with st.expander("🏢 Business Name Idea Generator"):
-        business_concept_input = st.text_input("Describe your business concept briefly:", key="biz_concept_input")
-        if st.button("Generate Business Names", key="biz_name_btn"):
+    # --- 24. Research Question Refiner ---
+    with st.expander("🔬 Research Question Refiner"):
+        initial_research_question_input = st.text_area("Your initial research question:", height=100, key="research_question_refiner_input")
+        if st.button("Refine Question", key="research_question_refiner_btn"):
             if not st.session_state.api_key: st.error("API key required.")
             elif not business_concept_input: st.warning("Please describe your business concept.")
             else:
@@ -1726,10 +1740,10 @@ if st.session_state.selected_main_tab == "🛠️ Misc. Features":
                     st.markdown("**Suggested Business Names:**")
                     st.markdown(biz_names_output)
 
-    # --- 35. Workout Idea Generator ---
-    with st.expander("💪 Workout Idea Generator (Simple)"):
-        workout_focus_input = st.text_input("Optional: Focus area or available equipment (e.g., core, bodyweight, dumbbells):", key="workout_focus_input")
-        if st.button("Suggest Workout", key="workout_idea_btn"):
+    # --- 25. Abstract Generator ---
+    with st.expander("📝 Abstract Generator"):
+        abstract_topic_input = st.text_area("Topic for the abstract:", height=100, key="abstract_topic_input")
+        if st.button("Generate Abstract", key="abstract_generator_btn"):
             if not st.session_state.api_key: st.error("API key required.")
             else:
                 with st.spinner("Planning your sweat session..."):
@@ -1738,10 +1752,10 @@ if st.session_state.selected_main_tab == "🛠️ Misc. Features":
                     st.markdown("**Simple Workout Idea (15-20 mins):**")
                     st.markdown(workout_output)
 
-    # --- 36. Gift Idea Suggester ---
-    with st.expander("🎁 Gift Idea Suggester"):
-        recipient_interests_input = st.text_input("Recipient's main interests (e.g., reading, hiking, tech):", key="gift_interests_input")
-        if st.button("Suggest Gifts", key="gift_idea_btn"):
+    # --- 26. Literature Review Outline Generator ---
+    with st.expander("📖 Literature Review Outline Generator"):
+        lit_review_topic_input = st.text_input("Topic for the literature review:", key="lit_review_topic_input")
+        if st.button("Generate Outline", key="lit_review_outline_btn"):
             if not st.session_state.api_key: st.error("API key required.")
             elif not recipient_interests_input: st.warning("Please enter recipient's interests.")
             else:
@@ -1751,10 +1765,10 @@ if st.session_state.selected_main_tab == "🛠️ Misc. Features":
                     st.markdown("**Gift Suggestions:**")
                     st.markdown(gift_ideas_output)
 
-    # --- 37. Travel Itinerary Snippet ---
-    with st.expander("✈️ Travel Itinerary Snippet (1-Day)"):
-        destination_city_input = st.text_input("Destination City:", key="travel_dest_input")
-        if st.button("Create Itinerary Snippet", key="travel_snippet_btn"):
+    # --- 27. Problem Solving Steps Generator ---
+    with st.expander("🧩 Problem Solving Steps Generator"):
+        problem_domain_input = st.text_input("Domain or type of problem (e.g., scientific, technical, ethical):", key="problem_solving_domain_input")
+        if st.button("Generate Steps", key="problem_solving_btn"):
             if not st.session_state.api_key: st.error("API key required.")
             elif not destination_city_input: st.warning("Please enter a destination city.")
             else:
@@ -1764,10 +1778,10 @@ if st.session_state.selected_main_tab == "🛠️ Misc. Features":
                     st.markdown(f"**1-Day Itinerary Snippet for {destination_city_input}:**")
                     st.markdown(itinerary_output)
 
-    # --- 38. Ice Breaker Question Generator ---
-    with st.expander("🧊 Ice Breaker Question Generator"):
-        group_setting_input = st.text_input("Group setting (e.g., team meeting, new class, party):", key="ice_breaker_setting_input")
-        if st.button("Generate Ice Breakers", key="ice_breaker_btn"):
+    # --- 28. Critical Thinking Prompt Generator ---
+    with st.expander("🧠 Critical Thinking Prompt Generator"):
+        critical_thinking_topic_input = st.text_input("Topic for critical thinking prompts:", key="critical_thinking_topic_input")
+        if st.button("Generate Prompts", key="critical_thinking_btn"):
             if not st.session_state.api_key: st.error("API key required.")
             elif not group_setting_input: st.warning("Please specify the group setting.")
             else:
@@ -1777,10 +1791,10 @@ if st.session_state.selected_main_tab == "🛠️ Misc. Features":
                     st.markdown("**Ice Breaker Questions:**")
                     st.markdown(ice_breakers_output)
 
-    # --- 39. Personalized Affirmation Generator ---
-    with st.expander("🌟 Personalized Affirmation Generator"):
-        personal_goal_input = st.text_input("Your personal goal (e.g., be more confident, learn a new skill):", key="affirmation_goal_input")
-        if st.button("Create Affirmations", key="affirmation_btn"):
+    # --- 29. Study Group Discussion Questions ---
+    with st.expander("👥 Study Group Discussion Questions"):
+        study_group_topic_input = st.text_input("Topic for study group discussion:", key="study_group_topic_input")
+        if st.button("Generate Questions", key="study_group_questions_btn"):
             if not st.session_state.api_key: st.error("API key required.")
             elif not personal_goal_input: st.warning("Please enter your personal goal.")
             else:
@@ -1790,10 +1804,10 @@ if st.session_state.selected_main_tab == "🛠️ Misc. Features":
                     st.markdown("**Your Personalized Affirmations:**")
                     st.markdown(affirmations_output)
 
-    # --- 40. Excuse Generator (Humorous) ---
-    with st.expander("😂 Excuse Generator (Humorous)"):
-        event_situation_input = st.text_input("Event/Situation you need an excuse for (e.g., being late for a meeting, missing homework):", key="excuse_event_input")
-        if st.button("Generate Funny Excuse", key="excuse_btn"):
+    # --- 30. Exam Question Predictor ---
+    with st.expander("📚 Exam Question Predictor"):
+        exam_topic_input = st.text_input("Topic for exam question prediction:", key="exam_topic_input")
+        if st.button("Predict Questions", key="exam_question_predictor_btn"):
             if not st.session_state.api_key: st.error("API key required.")
             elif not event_situation_input: st.warning("Please specify the event/situation.")
             else:
@@ -1802,6 +1816,133 @@ if st.session_state.selected_main_tab == "🛠️ Misc. Features":
                     excuse_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.9, "Brief", {"tone": "Humorous", "language_style": "Exaggerated"})
                     st.markdown("**Your Hilariously Unbelievable Excuse:**")
                     st.markdown(excuse_output)
+
+    # --- 31. Academic Terminology Explainer ---
+    with st.expander("🎓 Academic Terminology Explainer"):
+        academic_term_input = st.text_input("Academic term to explain:", key="academic_term_input")
+        if st.button("Explain Term", key="academic_term_explainer_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not academic_term_input: st.warning("Please enter a term.")
+            else:
+                with st.spinner("Defining term..."):
+                    prompt = templates["Academic Terminology Explainer"].format(academic_term=academic_term_input)
+                    term_explanation_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.4, "Standard", {"tone": "Academic", "language_style": "Detailed"})
+                    st.markdown(term_explanation_output)
+
+    # --- 32. Historical Context Generator ---
+    with st.expander("🕰️ Historical Context Generator"):
+        historical_subject_input = st.text_input("Historical event or person:", key="historical_subject_input")
+        if st.button("Generate Context", key="historical_context_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not historical_subject_input: st.warning("Please enter an event or person.")
+            else:
+                with st.spinner("Setting the scene..."):
+                    prompt = templates["Historical Context Generator"].format(historical_subject=historical_subject_input)
+                    historical_context_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.5, "Standard", {"tone": "Informative", "language_style": "Narrative"})
+                    st.markdown(historical_context_output)
+
+    # --- 33. Scientific Process Outline ---
+    with st.expander("🔬 Scientific Process Outline"):
+        scientific_topic_input = st.text_input("Topic for scientific process outline:", key="scientific_topic_input")
+        if st.button("Generate Outline", key="scientific_process_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not scientific_topic_input: st.warning("Please enter a topic.")
+            else:
+                with st.spinner("Mapping the scientific method..."):
+                    prompt = templates["Scientific Process Outline"].format(scientific_topic=scientific_topic_input)
+                    scientific_outline_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.4, "Standard", {"tone": "Technical", "language_style": "Structured"})
+                    st.markdown("**Scientific Process Outline:**")
+                    st.markdown(scientific_outline_output)
+
+    # --- 34. Mathematical Concept Explainer ---
+    with st.expander("➕ Mathematical Concept Explainer"):
+        math_concept_input = st.text_input("Mathematical concept to explain:", key="math_concept_input")
+        if st.button("Explain Concept", key="math_concept_explainer_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not math_concept_input: st.warning("Please enter a concept.")
+            else:
+                with st.spinner("Breaking down the math..."):
+                    prompt = templates["Mathematical Concept Explainer"].format(math_concept=math_concept_input)
+                    math_explanation_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.5, "Standard", {"tone": "Informative", "language_style": "Simple"})
+                    st.markdown(math_explanation_output)
+
+    # --- 35. Grammar/Style Checker (Basic) ---
+    with st.expander("✍️ Grammar/Style Checker (Basic)"):
+        text_to_check_input = st.text_area("Paste text to check grammar and style:", height=150, key="grammar_check_input")
+        if st.button("Check Text", key="grammar_check_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not text_to_check_input: st.warning("Please paste text.")
+            else:
+                with st.spinner("Reviewing text..."):
+                    prompt = templates["Grammar/Style Checker (Basic)"].format(text_to_check=text_to_check_input)
+                    grammar_check_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.4, "Standard", {"tone": "Helpful", "language_style": "Corrective"})
+                    st.markdown("**Review & Suggestions:**")
+                    st.markdown(grammar_check_output)
+
+    # --- 36. Paraphrasing Tool (Academic) ---
+    with st.expander("🔄 Paraphrasing Tool (Academic)"):
+        text_to_paraphrase_input = st.text_area("Paste text to paraphrase:", height=150, key="paraphrase_input")
+        if st.button("Paraphrase Text", key="paraphrase_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not text_to_paraphrase_input: st.warning("Please paste text.")
+            else:
+                with st.spinner("Paraphrasing..."):
+                    prompt = templates["Paraphrasing Tool (Academic)"].format(text_to_paraphrase=text_to_paraphrase_input)
+                    paraphrase_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.6, "Standard", {"tone": "Academic", "language_style": "Formal"})
+                    st.markdown("**Paraphrased Text:**")
+                    st.markdown(paraphrase_output)
+
+    # --- 37. Counter-Argument Generator ---
+    with st.expander("⚔️ Counter-Argument Generator"):
+        main_argument_input = st.text_area("Enter the main argument:", height=100, key="counter_argument_input")
+        if st.button("Generate Counter-Arguments", key="counter_argument_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not main_argument_input: st.warning("Please enter an argument.")
+            else:
+                with st.spinner("Considering opposing views..."):
+                    prompt = templates["Counter-Argument Generator"].format(main_argument=main_argument_input)
+                    counter_arguments_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.7, "Standard", {"tone": "Analytical", "language_style": "Structured"})
+                    st.markdown("**Potential Counter-Arguments:**")
+                    st.markdown(counter_arguments_output)
+
+    # --- 38. Hypothesis Generator ---
+    with st.expander("🧪 Hypothesis Generator"):
+        observation_or_topic_input = st.text_area("Observation or topic for hypothesis:", height=100, key="hypothesis_input")
+        if st.button("Generate Hypothesis", key="hypothesis_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not observation_or_topic_input: st.warning("Please enter an observation or topic.")
+            else:
+                with st.spinner("Formulating hypotheses..."):
+                    prompt = templates["Hypothesis Generator"].format(observation_or_topic=observation_or_topic_input)
+                    hypothesis_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.6, "Brief", {"tone": "Scientific", "language_style": "Concise"})
+                    st.markdown("**Suggested Hypothesis/Hypotheses:**")
+                    st.markdown(hypothesis_output)
+
+    # --- 39. Data Interpretation Helper ---
+    with st.expander("📊 Data Interpretation Helper"):
+        data_description_input = st.text_area("Describe the data or observation:", height=150, key="data_interpretation_input")
+        if st.button("Interpret Data", key="data_interpretation_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not data_description_input: st.warning("Please describe the data.")
+            else:
+                with st.spinner("Interpreting data..."):
+                    prompt = templates["Data Interpretation Helper"].format(data_description=data_description_input)
+                    data_interpretation_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.5, "Standard", {"tone": "Analytical", "language_style": "Informative"})
+                    st.markdown("**Data Interpretation:**")
+                    st.markdown(data_interpretation_output)
+
+    # --- 40. Learning Objective Generator ---
+    with st.expander("🎯 Learning Objective Generator"):
+        learning_topic_input = st.text_input("Topic for learning objectives:", key="learning_objective_topic_input")
+        if st.button("Generate Objectives", key="learning_objective_btn"):
+            if not st.session_state.api_key: st.error("API key required.")
+            elif not learning_topic_input: st.warning("Please enter a topic.")
+            else:
+                with st.spinner("Defining objectives..."):
+                    prompt = templates["Learning Objective Generator"].format(learning_topic=learning_topic_input)
+                    learning_objectives_output = generate_ai_content(prompt, st.session_state.api_key, model_name, 0.6, "Brief", {"tone": "Educational", "language_style": "Structured"})
+                    st.markdown("**Suggested Learning Objectives:**")
+                    st.markdown(learning_objectives_output)
 
     # --- Placeholder for more tools ---
     st.markdown("---")
